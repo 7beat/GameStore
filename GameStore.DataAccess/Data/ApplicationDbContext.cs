@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using GameStore.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameStoreWeb.Data
@@ -9,5 +10,7 @@ namespace GameStoreWeb.Data
             : base(options)
         {
         }
+
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     }
 }
