@@ -59,5 +59,36 @@ namespace GameStore.DataAccess.Repository
         {
             dbSet.Remove(entity);
         }
+
+        #region Async
+
+        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, params string[] includeProperties)
+        {
+            IQueryable<T> query = dbSet.Where(predicate);
+
+            if (includeProperties != null)
+            {
+                foreach (var item in includeProperties)
+                {
+                    query = query.Include(item);
+                }
+            }
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<T>> GetAllAsync(params string[] includeProperties)
+        {
+            IQueryable<T> query = dbSet;
+            if (includeProperties != null)
+            {
+                foreach (var item in includeProperties)
+                {
+                    query = query.Include(item);
+                }
+            }
+            return await query.ToListAsync();
+        }
+
+        #endregion
     }
 }
