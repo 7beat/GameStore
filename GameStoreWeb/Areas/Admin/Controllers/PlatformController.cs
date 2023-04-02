@@ -16,8 +16,8 @@ namespace GameStoreWeb.Areas.Admin.Controllers
 
         public IActionResult Index()
         {
-            var platform = _unitOfWork.Platform.GetFirstOrDefault(x => x.Id == 1); // GetAall
-            return View(platform);
+            var platformsList = _unitOfWork.Platform.GetAll();
+            return View(platformsList);
         }
     }
 }
