@@ -25,5 +25,10 @@ namespace GameStore.DataAccess.Repository
             _db.SaveChanges(); 
             // Add in Program.cs
         }
+
+        public async Task SaveAsync()
+        {
+            await _db.SaveChangesAsync();
+        }
     }
 }
