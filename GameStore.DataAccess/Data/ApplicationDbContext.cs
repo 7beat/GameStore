@@ -1,4 +1,5 @@
-﻿using GameStore.Models.Identity;
+﻿using GameStore.Models;
+using GameStore.Models.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,5 +13,6 @@ namespace GameStoreWeb.Data
         }
 
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<Platform> Platforms { get; set; }
     }
 }
