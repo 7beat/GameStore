@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
-namespace GameStore.Models
+namespace GameStore.Models.Identity
 {
     public class ApplicationUser : IdentityUser
     {
