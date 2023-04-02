@@ -11,5 +11,6 @@ namespace GameStore.DataAccess.Repository.IRepository
         IPlatformRepository Platform { get; }
 
         void Save();
+        Task SaveAsync();
     }
 }
