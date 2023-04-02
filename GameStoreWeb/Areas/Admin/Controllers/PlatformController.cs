@@ -14,9 +14,9 @@ namespace GameStoreWeb.Areas.Admin.Controllers
             _unitOfWork = unitOfWork;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var platformsList = _unitOfWork.Platform.GetAll();
+            var platformsList = await _unitOfWork.Platform.GetAllAsync();
             return View(platformsList);
         }
     }
