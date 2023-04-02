@@ -13,5 +13,12 @@ namespace GameStore.DataAccess.Repository.IRepository
         IEnumerable<T> GetAll(params string[] includeProperties);
         void Add(T entity);
         void Remove(T entity);
+
+        #region Async
+
+        Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, params string[] includeProperties);
+        Task<IEnumerable<T>> GetAllAsync(params string[] includeProperties);
+
+        #endregion
     }
 }
