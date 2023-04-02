@@ -10,6 +10,7 @@ namespace GameStore.DataAccess.Repository.IRepository
     public interface IRepository<T> where T : class
     {
         T GetFirstOrDefault(Expression<Func<T, bool>> predicate, params string[] includeProperties);
+        IEnumerable<T> GetAll(params string[] includeProperties);
         void Add(T entity);
         void Remove(T entity);
     }
