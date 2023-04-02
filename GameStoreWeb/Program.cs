@@ -1,4 +1,5 @@
-using GameStore.DataAccess;
+using GameStore.DataAccess.Repository;
+using GameStore.DataAccess.Repository.IRepository;
 using GameStoreWeb.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +12,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.User.RequireUniqueEmail = true )
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.User.RequireUniqueEmail = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var app = builder.Build();
 
