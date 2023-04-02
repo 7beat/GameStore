@@ -27,6 +27,19 @@ namespace GameStore.DataAccess.Repository
             dbSet.Add(entity);
         }
 
+        public IEnumerable<T> GetAll(params string[] includeProperties)
+        {
+            IQueryable<T> query = dbSet;
+            if (includeProperties != null)
+            {
+                foreach (var item in includeProperties)
+                {
+                    query = query.Include(item);
+                }
+            }
+            return query.ToList();
+        }
+
         public T GetFirstOrDefault(Expression<Func<T, bool>> predicate, params string[] includeProperties)
         {
             IQueryable<T> query = dbSet.Where(predicate);
