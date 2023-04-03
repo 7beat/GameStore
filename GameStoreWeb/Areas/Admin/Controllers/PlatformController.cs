@@ -21,6 +21,25 @@ namespace GameStoreWeb.Areas.Admin.Controllers
             return View(platformsList);
         }
 
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Platform obj)
+        {
+            if (ModelState.IsValid)
+            {
+                _unitOfWork.Platform.Add(obj);
+                await _unitOfWork.SaveAsync();
+                TempData["success"] = "Platform created successfully";
+                return RedirectToAction(nameof(Index));
+            }
+            return View(obj);
+        }
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id is null || id == 0)
