@@ -68,5 +68,34 @@ namespace GameStoreWeb.Areas.Admin.Controllers
             }
             return View(platform);
         }
+
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id is null || id == 0)
+                return NotFound();
+            
+            var platformDb = await _unitOfWork.Platform.GetFirstOrDefaultAsync(x => x.Id == id);
+
+            if (platformDb is null)
+                return NotFound();
+
+            return View(platformDb);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Delete(int id)
+        {
+            var platformDb = _unitOfWork.Platform.GetFirstOrDefault(x => x.Id == id);
+
+            if (platformDb is null)
+                return NotFound();
+
+            _unitOfWork.Platform.Remove(platformDb);
+            _unitOfWork.Save();
+
+            TempData["success"] = "Platform deleted successfully";
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
