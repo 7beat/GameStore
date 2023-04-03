@@ -10,9 +10,6 @@ namespace GameStoreWeb.Areas.Admin.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
 
-        [BindProperty]
-        public Platform Platform { get; set; }
-
         public PlatformController(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
