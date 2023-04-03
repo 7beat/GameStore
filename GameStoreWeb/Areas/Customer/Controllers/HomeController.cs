@@ -14,8 +14,12 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string? searchQuery)
         {
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                Console.WriteLine("Search Bar used");
+            }
             return View();
         }
 
