@@ -29,24 +29,5 @@
     @{
         <partial name="_ValidationScriptsPartial" />
     }
-
-        <script>
-        //$(function () {
-        //    var quill = new Quill('#editor', {
-        //        theme: 'snow'
-        //    });
-
-        //    $('form').submit(function () {
-        //        var description = $('#editor').html();
-        //        $('textarea[name="Description"]').val(description);
-        //    });
-        //});
-        tinymce.init({
-            selector: 'textarea',
-            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
-            toolbar_mode: 'floating',
-        });
-
-        </script>
-    
+    <script src="~/js/tinymce.js"></script>
 }
