@@ -1,7 +1,9 @@
 tinymce.init({
     selector: 'textarea',
-    plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
-    toolbar_mode: 'floating',
+    plugins: 'lists code emoticons',
+    toolbar: 'undo redo | styleselect | bold italic | ' +
+        'alignleft aligncenter alignright alignjustify | ' +
+        'outdent indent | numlist bullist | print | emoticons',
     browser_spellcheck: true,
     branding: false
 });
