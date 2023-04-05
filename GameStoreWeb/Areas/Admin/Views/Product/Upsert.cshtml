@@ -11,7 +11,6 @@
                     <h2 class="text-primary">@(Model.Product.Id != 0 ? "Update" : "Create") Product</h2>
                     <hr />
                 </div>
-                <!-- Validation Summary lets me display all(custom) ModelState errors on top of form-->
                 <div asp-validation-summary="All"></div>
                 <div class="mb-3">
                     <label asp-for="Product.Title"></label>
@@ -61,7 +60,6 @@
                     }
                     else
                     {
-                        <!--Extra validation for Image, cuz it cant be null while creating new Product-->
                         <button type="submit" onclick="return ValidateInput()" class="btn btn-primary" style="width:150px">Create</button>
                     }
 
@@ -76,23 +74,14 @@
             width="100%" style="border-radius:5px; border:1px solid #bbb9b9" />
         </div>
     </div>
-
-    
 </form>
 
-@*Adding client side validations, it will just check if forms are not empty*@
 @section Scripts{
     @{
         <partial name="_ValidationScriptsPartial" />
     }
+    <script src="~/js/tinymce.js"></script>
     <script>
-        // tinyMCE text input, may expire!
-        tinymce.init({
-            selector: 'textarea',
-            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
-            toolbar_mode: 'floating',
-        });
-
         // SweetAlerts setup
         function ValidateInput(){
             if(document.getElementById("uploadBox").value==""){
