@@ -13,7 +13,7 @@ namespace GameStore.Models
         [Required]
         public string Name { get; set; }
         [Required]
-        [StringLength(255)]
+        //[StringLength(255)]
         public string Description { get; set; }
     }
 }
