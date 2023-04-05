@@ -1,0 +1,110 @@
+﻿@model GameStore.Models.ViewModels.ProductVM
+
+<form method="post" asp-action="Upsert" enctype="multipart/form-data">
+    <input asp-for="Product.Id" hidden />
+    <input asp-for="Product.ImageUrl" hidden />
+    
+    <div class="row">
+        <div class="col-10">
+            <div class="border p-3 mt-4 row">
+                <div class="col-12 pb-2">
+                    <h2 class="text-primary">@(Model.Product.Id != 0 ? "Update" : "Create") Product</h2>
+                    <hr />
+                </div>
+                <!-- Validation Summary lets me display all(custom) ModelState errors on top of form-->
+                <div asp-validation-summary="All"></div>
+                <div class="mb-3">
+                    <label asp-for="Product.Name"></label>
+                    <input asp-for="Product.Name" class="form-control" />
+                    <span asp-validation-for="Product.Name" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Product.Description"></label>
+                    <textarea asp-for="Product.Description" rows="3" class="form-control"></textarea> <!--Text area instead of input, needs closing Tag!-->
+                    <span asp-validation-for="Product.Description" class="text-danger"></span>
+                </div>
+                <div class="mb-3 col-6">
+                    <label asp-for="Product.Developer"></label>
+                    <input asp-for="Product.Developer" class="form-control" />
+                    <span asp-validation-for="Product.Developer" class="text-danger"></span>
+                </div>
+                <div class="mb-3 col-6">
+                    <label asp-for="Product.Price"></label>
+                    <input asp-for="Product.Price" class="form-control" />
+                    <span asp-validation-for="Product.Price" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Product.ImageUrl"></label>
+                    <input id="uploadBox" type="file" name="file" class="form-control" />
+                    <!--Validation is in function below with sweetAlerts-->
+                </div>
+
+                <div class="mb-3 col-6">
+                    <label asp-for="Product.GenreId"></label>
+                    <select asp-for="Product.GenreId" asp-items="@Model.GenreList" class="form-select">
+                        <option disabled selected>--Select Genre--</option>
+                    </select>
+                    <span asp-validation-for="Product.GenreId" class="text-danger"></span>
+                </div>
+                <div class="mb-3 col-6">
+                    <label asp-for="Product.PlatformId"></label>
+                    <select asp-for="Product.PlatformId" asp-items="@Model.PlatformList" class="form-select">
+                        <option disabled selected>--Select Platform--</option>
+                    </select>
+                    <span asp-validation-for="Product.PlatformId" class="text-danger"></span>
+                </div>
+
+                <div class="col-12">
+                    @if (Model.Product.Id != 0)
+                    {
+                        <button type="submit" class="btn btn-primary" style="width:150px">Update</button>
+                    }
+                    else
+                    {
+                        <!--Extra validation for Image, cuz it cant be null while creating new Product-->
+                        <button type="submit" onclick="return ValidateInput()" class="btn btn-primary" style="width:150px">Create</button>
+                    }
+
+                    <a asp-controller="Product" asp-action="Index" class="btn btn-secondary" style="width:150px">
+                        Back to list
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-2 pt-4">
+            <img src="@Model.Product.ImageUrl"
+            width="100%" style="border-radius:5px; border:1px solid #bbb9b9" />
+        </div>
+    </div>
+
+    
+</form>
+
+@*Adding client side validations, it will just check if forms are not empty*@
+@section Scripts{
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+    <script>
+        // tinyMCE text input, may expire!
+        tinymce.init({
+            selector: 'textarea',
+            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
+            toolbar_mode: 'floating',
+        });
+
+        // SweetAlerts setup
+        function ValidateInput(){
+            if(document.getElementById("uploadBox").value==""){
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Oops...',
+                  text: 'Please upload an Image!',
+                  footer: '<a href="">Why do I have this issue?</a>'
+                });
+                return false;
+            }
+            return true;
+        }
+    </script>
+}
