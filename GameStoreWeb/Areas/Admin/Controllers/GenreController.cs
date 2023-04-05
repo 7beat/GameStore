@@ -43,30 +43,28 @@ namespace GameStoreWeb.Areas.Admin.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id is null || id == 0)
-            {
                 return NotFound();
-            }
+            
+            var genreDb = await _unitOfWork.Genre.GetFirstOrDefaultAsync(x => x.Id == id);
 
-            var platformDb = await _unitOfWork.Platform.GetFirstOrDefaultAsync(x => x.Id == id);
+            if (genreDb is null)
+                return NotFound();
 
-            if (platformDb is null)
-                    return NotFound();
-
-            return View(platformDb);
+            return View(genreDb);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Platform platform)
+        public async Task<IActionResult> Edit(Genre genre)
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.Platform.Update(platform);
+                _unitOfWork.Genre.Update(genre);
                 await _unitOfWork.SaveAsync();
-                TempData["success"] = "Platform edited successfully";
+                TempData["success"] = "Genre edited successfully";
                 return RedirectToAction(nameof(Index));
             }
-            return View(platform);
+            return View(genre);
         }
 
         public async Task<IActionResult> Delete(int? id)
