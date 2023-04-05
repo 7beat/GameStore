@@ -1,4 +1,5 @@
-﻿using GameStoreWeb.Models;
+﻿using GameStore.DataAccess.Repository.IRepository;
+using GameStoreWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -8,19 +9,24 @@ namespace GameStoreWeb.Areas.Customer.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IUnitOfWork unitOfWork)
         {
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
-        public IActionResult Index(string? searchQuery)
+        public async Task<IActionResult> Index(string? searchQuery)
         {
             if (!string.IsNullOrEmpty(searchQuery))
             {
                 Console.WriteLine("Search Bar used");
             }
-            return View();
+
+            var productList = await _unitOfWork.Product.GetAllAsync("Platform");
+
+            return View(productList);
         }
 
         public IActionResult Privacy()
