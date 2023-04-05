@@ -28,13 +28,13 @@ namespace GameStoreWeb.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Platform obj)
+        public async Task<IActionResult> Create(Genre obj)
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.Platform.Add(obj);
+                _unitOfWork.Genre.Add(obj);
                 await _unitOfWork.SaveAsync();
-                TempData["success"] = "Platform created successfully";
+                TempData["success"] = "Genre created successfully";
                 return RedirectToAction(nameof(Index));
             }
             return View(obj);
