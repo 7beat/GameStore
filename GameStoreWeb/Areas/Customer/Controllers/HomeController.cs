@@ -1,4 +1,5 @@
 ﻿using GameStore.DataAccess.Repository.IRepository;
+using GameStore.Models;
 using GameStoreWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -19,12 +20,16 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 
         public async Task<IActionResult> Index(string? searchQuery)
         {
+            IEnumerable<Product> productList;
+
             if (!string.IsNullOrEmpty(searchQuery))
             {
-                Console.WriteLine("Search Bar used");
+                productList = await _unitOfWork.Product.GetAllAsync(x => x.Title.Contains(searchQuery), "Platform");
             }
-
-            var productList = await _unitOfWork.Product.GetAllAsync("Platform");
+            else
+            {
+                productList = await _unitOfWork.Product.GetAllAsync("Platform");
+            }
 
             return View(productList);
         }
