@@ -12,6 +12,7 @@ namespace GameStore.DataAccess.Repository
     {
         public IPlatformRepository Platform { get; private set; }
         public IGenreRepository Genre { get; private set; }
+        public IProductRepository Product { get; private set; }
 
         private ApplicationDbContext _db;
 
@@ -20,6 +21,7 @@ namespace GameStore.DataAccess.Repository
             _db = db;
             Platform = new PlatformRepository(_db);
             Genre = new GenreRepository(_db);
+            Product = new ProductRepository(_db);
         }
 
         public void Save()

@@ -10,6 +10,7 @@ namespace GameStore.DataAccess.Repository.IRepository
     {
         IPlatformRepository Platform { get; }
         IGenreRepository Genre { get; }
+        IProductRepository Product { get; }
 
         void Save();
         Task SaveAsync();
