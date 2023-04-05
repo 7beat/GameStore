@@ -18,6 +18,7 @@ namespace GameStore.DataAccess.Repository.IRepository
 
         Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, params string[] includeProperties);
         Task<IEnumerable<T>> GetAllAsync(params string[] includeProperties);
+        Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate, params string[] includeProperties);
 
         #endregion
     }
