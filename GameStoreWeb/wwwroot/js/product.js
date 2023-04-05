@@ -10,11 +10,11 @@ function loadDataTable() {
             "url": "/Admin/Product/GetAll"
         },
         "columns": [
-            { "data": "name", "width": "15%" },
-            { "data": "developer", "width": "15%" },
-            { "data": "price", "width": "15%" },
+            { "data": "title", "width": "15%" },
             { "data": "genre.name", "width": "15%" },
             { "data": "platform.name", "width": "15%" },
+            { "data": "developer", "width": "15%" },
+            { "data": "price", "width": "15%" },
             {
                 "data": "id",
                 "render": function (data) {
