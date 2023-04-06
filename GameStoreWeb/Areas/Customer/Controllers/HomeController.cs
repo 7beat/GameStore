@@ -2,6 +2,7 @@
 using GameStore.Models;
 using GameStoreWeb.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace GameStoreWeb.Areas.Customer.Controllers
@@ -43,6 +44,22 @@ namespace GameStoreWeb.Areas.Customer.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public async Task<IActionResult> FilterProducts(string searchQuery)
+        {
+            IEnumerable<Product> productList;
+
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                productList = await _unitOfWork.Product.GetAllAsync(x => x.Title.Contains(searchQuery), "Platform");
+            }
+            else
+            {
+                productList = await _unitOfWork.Product.GetAllAsync("Platform");
+            }
+
+            return PartialView("_ProductList", productList);
         }
     }
 }
