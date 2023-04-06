@@ -3,6 +3,9 @@
     ViewData["Title"] = "Home Page";
 }
 
+<input type="text" id="searchBar" class="form-control" />
+<button id="searchBtn" class="btn btn-primary">Search</button>
+
 <div class="container mt-5">
     <h1 class="text-center mb-5">Welcome to our Store</h1>
     <div class="row">
@@ -27,3 +30,27 @@
         }
     </div>
 </div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            var searchBar = $('#searchBar');
+
+            searchBar.on('input', function () {
+                var searchQuery = searchBar.val();
+
+                $.ajax({
+                    url: '@Url.Action("FilterProducts", "Home")',
+                    type: 'GET',
+                    data: { searchQuery: searchQuery },
+                    success: function (result) {
+                        $('.row').html(result);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+    </script>
+}
