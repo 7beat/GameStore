@@ -1,3 +1,18 @@
 ﻿@model int
 
-<i class="bi bi-cart"></i> &nbsp; (@Model)
+@if (Model > 0)
+{
+    <i class="bi bi-cart"></i> Html.Raw("&nbsp;"); <span class="badge bg-danger" id="cartCount">(@Model)</span>
+}else
+{
+    <i class="bi bi-cart"></i>
+}
+
+<style>
+    .badge {
+        font-size: 0.8rem;
+        font-weight: bold;
+        line-height: 1;
+        vertical-align: baseline;
+    }
+</style>
