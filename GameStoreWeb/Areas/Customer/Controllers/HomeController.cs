@@ -106,11 +106,4 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
-
-    public class CartItem
-    {
-        public int ProductId { get; set; }
-        public string ProductName { get; set; }
-        public int Quantity { get; set; }
-    }
 }
