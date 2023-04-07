@@ -1,6 +1,7 @@
 ﻿using GameStore.DataAccess.Repository;
 using GameStore.DataAccess.Repository.IRepository;
 using GameStore.Models;
+using GameStore.Utility;
 using GameStoreWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -41,7 +42,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             if (productId is null || productId == 0)
                 return NotFound();
 
-            var productDb = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == productId, "Platform", "Genre");
+            var productDb = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == productId, AppIncludes.Product.Platform, AppIncludes.Product.Genre);
 
             return View(productDb);
         }
