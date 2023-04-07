@@ -49,5 +49,51 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 
             return View(cartVM);
         }
-    }
+
+		public IActionResult Plus(int cartId)
+		{
+            if (User.Identity.IsAuthenticated)
+            {
+				// Handle Db Cart
+			}
+			else
+            {
+                var cookieCart = _unitOfWork.CookieShoppingCart.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
+                cookieCart.Quantity++;
+                _unitOfWork.CookieShoppingCart.Update(cookieCart);
+            }
+			return RedirectToAction(nameof(Index));
+		}
+
+		public IActionResult Minus(int cartId)
+        {
+			if (User.Identity.IsAuthenticated)
+			{
+				// Handle Db Cart
+			}
+			else
+			{
+				var cookieCart = _unitOfWork.CookieShoppingCart.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
+				cookieCart.Quantity--;
+				_unitOfWork.CookieShoppingCart.Update(cookieCart);
+			}
+			return RedirectToAction(nameof(Index));
+		}
+
+		public IActionResult Remove(int cartId)
+		{
+			if (User.Identity.IsAuthenticated)
+			{
+				// Handle Db Cart
+			}
+			else
+			{
+				var cookieCart = _unitOfWork.CookieShoppingCart.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
+				cookieCart.Quantity = 0;
+				_unitOfWork.CookieShoppingCart.Update(cookieCart);
+			}
+			return RedirectToAction(nameof(Index));
+		}
+
+	}
 }
