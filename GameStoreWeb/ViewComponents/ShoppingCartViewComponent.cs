@@ -1,5 +1,5 @@
-﻿using GameStore.Utility;
-using GameStoreWeb.Areas.Customer.Controllers;
+﻿using GameStore.Models;
+using GameStore.Utility;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
