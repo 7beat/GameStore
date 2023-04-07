@@ -1,4 +1,5 @@
-﻿using GameStore.DataAccess.Repository.IRepository;
+﻿using GameStore.DataAccess.Repository;
+using GameStore.DataAccess.Repository.IRepository;
 using GameStore.Models;
 using GameStoreWeb.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -54,22 +55,17 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 
             var productDb = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == productId);
 
-            if (Request.Cookies.ContainsKey("ShoppingCart"))
-            {
-                string cartCookie = Request.Cookies["ShoppingCart"];
-                cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartCookie);
-            }
-
-            CartItem existingItem = cartItems.FirstOrDefault(item => item.ProductId == productId);
+            CartItem existingItem = _unitOfWork.CookieShoppingCart.GetAll().FirstOrDefault(item => item.ProductId == productId);
 
             if (existingItem != null)
             {
                 existingItem.Quantity++;
+                _unitOfWork.CookieShoppingCart.Update(existingItem);
                 TempData["success"] = "Quantity increased by 1";
             }
             else
             {
-                cartItems.Add(new CartItem
+                _unitOfWork.CookieShoppingCart.Add(new CartItem
                 {
                     ProductId = productDb.Id,
                     ProductName = productDb.Title,
@@ -77,12 +73,6 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                 });
                 TempData["success"] = "Added to Shopping Cart!";
             }
-
-            string cartJson = JsonConvert.SerializeObject(cartItems);
-            Response.Cookies.Append("ShoppingCart", cartJson, new CookieOptions
-            {
-                Expires = DateTime.Now.AddDays(30)
-            });
 
             return RedirectToAction(nameof(Index));
         }
