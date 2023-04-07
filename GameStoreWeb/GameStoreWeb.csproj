@@ -18,6 +18,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GameStore.DataAccess\GameStore.DataAccess.csproj" />
+    <ProjectReference Include="..\GameStore.Utility\GameStore.Utility.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\images\products\" />
   </ItemGroup>
 
 </Project>

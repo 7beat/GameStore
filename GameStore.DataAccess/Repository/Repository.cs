@@ -89,6 +89,19 @@ namespace GameStore.DataAccess.Repository
             return await query.ToListAsync();
         }
 
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate, params string[] includeProperties)
+        {
+            IQueryable<T> query = dbSet.Where(predicate);
+            if (includeProperties != null)
+            {
+                foreach (var item in includeProperties)
+                {
+                    query = query.Include(item);
+                }
+            }
+            return await query.ToListAsync();
+        }
+
         #endregion
     }
 }
