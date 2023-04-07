@@ -51,20 +51,24 @@ namespace GameStore.DataAccess.Repository
             return cartItems;
         }
 
-        public void Update(CartItem item)
-        {
-            List<CartItem> cartItems = GetAll();
-            CartItem existingItem = cartItems.FirstOrDefault(x => x.ProductId == item.ProductId);
+		public void Update(CartItem item) // do usunięcia ma 0
+		{
+			List<CartItem> cartItems = GetAll();
+			CartItem existingItem = cartItems.FirstOrDefault(x => x.ProductId == item.ProductId);
 
-            if (existingItem != null)
-            {
-                existingItem.Quantity = item.Quantity;
-            }
+			if (existingItem != null && item.Quantity > 0)
+			{
+				existingItem.Quantity = item.Quantity;
+			}
+			else
+			{
+				cartItems.Remove(existingItem);
+			}
 
-            UpdateCartItems(cartItems);
-        }
+			UpdateCartItems(cartItems);
+		}
 
-        private void UpdateCartItems(List<CartItem> cartItems)
+		private void UpdateCartItems(List<CartItem> cartItems)
         {
             var response = _httpContextAccessor.HttpContext.Response;
             string cartJson = JsonConvert.SerializeObject(cartItems);
