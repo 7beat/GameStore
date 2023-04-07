@@ -8,13 +8,11 @@ namespace GameStoreWeb.ViewComponents
     {
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            List<CartItem> cartItems = new List<CartItem>();
-            int totalQuantity = 0;
-
             if (Request.Cookies.ContainsKey("ShoppingCart"))
             {
                 string cartCookie = Request.Cookies["ShoppingCart"];
-                cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartCookie);
+                var cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartCookie);
+                int totalQuantity = 0;
 
                 foreach (var item in cartItems)
                 {
