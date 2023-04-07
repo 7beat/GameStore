@@ -23,7 +23,7 @@ namespace GameStore.DataAccess.Repository
         public void Add(CartItem item)
         {
             List<CartItem> cartItems = GetAll();
-            CartItem existingItem = cartItems.FirstOrDefault(item => item.ProductId == item.ProductId);
+            CartItem existingItem = cartItems.FirstOrDefault(x => x.ProductId == item.ProductId);
 
             if (existingItem != null)
             {
@@ -54,7 +54,7 @@ namespace GameStore.DataAccess.Repository
         public void Update(CartItem item)
         {
             List<CartItem> cartItems = GetAll();
-            CartItem existingItem = cartItems.FirstOrDefault(item => item.ProductId == item.ProductId);
+            CartItem existingItem = cartItems.FirstOrDefault(x => x.ProductId == item.ProductId);
 
             if (existingItem != null)
             {
