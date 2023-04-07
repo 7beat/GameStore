@@ -1,4 +1,5 @@
-﻿using GameStoreWeb.Areas.Customer.Controllers;
+﻿using GameStore.Utility;
+using GameStoreWeb.Areas.Customer.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -8,9 +9,9 @@ namespace GameStoreWeb.ViewComponents
     {
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            if (Request.Cookies.ContainsKey("ShoppingCart"))
+            if (Request.Cookies.ContainsKey(AppConsts.CookieCart))
             {
-                string cartCookie = Request.Cookies["ShoppingCart"];
+                string cartCookie = Request.Cookies[AppConsts.CookieCart];
                 var cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartCookie);
                 int totalQuantity = 0;
 
