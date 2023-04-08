@@ -88,17 +88,17 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 
 				if (existingItem != null)
 				{
-					existingItem.Quantity++;
-					_unitOfWork.CookieShoppingCart.Update(existingItem);
-					TempData["success"] = "Quantity increased by 1";
-				}
+                    await Console.Out.WriteLineAsync("NOT IMPLEMENTED");
+                    //existingItem.Quantity++;
+                    //_unitOfWork.CookieShoppingCart.Update(existingItem);
+                    //TempData["success"] = "Quantity increased by 1";
+                }
 				else
 				{
-					_unitOfWork.CookieShoppingCart.Add(new CartItem
+					_unitOfWork.CookieShoppingCart.Add(new ShoppingCart
 					{
 						ProductId = productDb.Id,
-						ProductName = productDb.Title,
-						Quantity = 1
+                        Count = 1
 					});
 					TempData["success"] = "Added to Shopping Cart!";
 				}
