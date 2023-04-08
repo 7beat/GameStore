@@ -7,6 +7,7 @@ using GameStoreWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace GameStoreWeb.Areas.Customer.Controllers
 {
@@ -16,7 +17,10 @@ namespace GameStoreWeb.Areas.Customer.Controllers
         private readonly ILogger<CartController> _logger;
         private readonly IUnitOfWork _unitOfWork;
 
-        public CartController(ILogger<CartController> logger, IUnitOfWork unitOfWork)
+		[BindProperty]
+		public ShoppingCartVM ShoppingCartVM { get; set; }
+
+		public CartController(ILogger<CartController> logger, IUnitOfWork unitOfWork)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
@@ -24,6 +28,25 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 
         public async Task<IActionResult> Index()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+				var claimsIdentity = (ClaimsIdentity)User.Identity;
+				var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+
+				ShoppingCartVM = new ShoppingCartVM()
+				{
+					ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == claim.Value, "Product"),
+					OrderHeader = new(),
+					CartItems = null
+				};
+				foreach (var cart in ShoppingCartVM.ListCart)
+				{
+					ShoppingCartVM.OrderHeader.OrderTotal += (cart.Product.Price * cart.Count);
+				}
+				return View(ShoppingCartVM);
+			}
+
+
             List<Product> products = new();
 
             var cookieCart = _unitOfWork.CookieShoppingCart.GetAll();
