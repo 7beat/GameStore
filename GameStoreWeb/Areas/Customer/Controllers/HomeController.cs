@@ -1,11 +1,13 @@
 ﻿using GameStore.DataAccess.Repository;
 using GameStore.DataAccess.Repository.IRepository;
 using GameStore.Models;
+using GameStore.Models.ViewModels;
 using GameStore.Utility;
 using GameStoreWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace GameStoreWeb.Areas.Customer.Controllers
 {
@@ -37,43 +39,70 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             return View(productList);
         }
 
-        public async Task<IActionResult> Details(int? productId)
-        {
-            if (productId is null || productId == 0)
-                return NotFound();
-
-            var productDb = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == productId, AppIncludes.Product.Platform, AppIncludes.Product.Genre);
-
-            return View(productDb);
-        }
-
-        // Concept Cookies based Shopping Cart
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Details(int productId)
         {
-            List<CartItem> cartItems = new List<CartItem>();
+            if (productId == 0)
+                return NotFound();
 
-            var productDb = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == productId);
-
-            CartItem existingItem = _unitOfWork.CookieShoppingCart.GetAll().FirstOrDefault(item => item.ProductId == productId);
-
-            if (existingItem != null)
+            ShoppingCart cartObj = new()
             {
-                existingItem.Quantity++;
-                _unitOfWork.CookieShoppingCart.Update(existingItem);
-                TempData["success"] = "Quantity increased by 1";
+                Product = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == productId, "Genre", "Platform"),
+				Count = 1,
+				ProductId = productId,
+			};
+
+			return View(cartObj);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Details(ShoppingCart shoppingCart)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                shoppingCart.ApplicationUserId = userId;
+
+				ShoppingCart cartDb = _unitOfWork.ShoppingCart.GetFirstOrDefault(x => x.ApplicationUserId == userId && x.ProductId == shoppingCart.ProductId);
+
+				if (cartDb == null)
+				{
+					_unitOfWork.ShoppingCart.Add(shoppingCart);
+					await _unitOfWork.SaveAsync();
+					TempData["success"] = "Added to Shopping Cart!";
+				}
+				else
+				{
+					_unitOfWork.ShoppingCart.IncrementCount(cartDb, shoppingCart.Count);
+					await _unitOfWork.SaveAsync();
+					TempData["success"] = "Quantity increased by 1";
+				}
             }
             else
             {
-                _unitOfWork.CookieShoppingCart.Add(new CartItem
-                {
-                    ProductId = productDb.Id,
-                    ProductName = productDb.Title,
-                    Quantity = 1
-                });
-                TempData["success"] = "Added to Shopping Cart!";
-            }
+				List<CartItem> cartItems = new List<CartItem>();
+
+				var productDb = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == shoppingCart.ProductId);
+
+				CartItem existingItem = _unitOfWork.CookieShoppingCart.GetAll().FirstOrDefault(item => item.ProductId == shoppingCart.ProductId);
+
+				if (existingItem != null)
+				{
+					existingItem.Quantity++;
+					_unitOfWork.CookieShoppingCart.Update(existingItem);
+					TempData["success"] = "Quantity increased by 1";
+				}
+				else
+				{
+					_unitOfWork.CookieShoppingCart.Add(new CartItem
+					{
+						ProductId = productDb.Id,
+						ProductName = productDb.Title,
+						Quantity = 1
+					});
+					TempData["success"] = "Added to Shopping Cart!";
+				}
+			}
 
             return RedirectToAction(nameof(Index));
         }
