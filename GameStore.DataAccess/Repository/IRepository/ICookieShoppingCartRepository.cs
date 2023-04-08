@@ -7,5 +7,9 @@ namespace GameStore.DataAccess.Repository.IRepository
         List<CartItem> GetAll();
         void Add(CartItem item);
         void Update(CartItem item);
+
+        // Test
+        void Add(ShoppingCart item);
+        List<ShoppingCart> GetAll2();
     }
 }
