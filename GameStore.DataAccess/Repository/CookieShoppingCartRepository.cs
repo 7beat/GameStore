@@ -37,7 +37,38 @@ namespace GameStore.DataAccess.Repository
             UpdateCartItems(cartItems);
         }
 
-        public List<CartItem> GetAll()
+		public void Add(ShoppingCart item)
+		{
+			List<ShoppingCart> cartItems = GetAll2();
+			ShoppingCart existingItem = cartItems.FirstOrDefault(x => x.ProductId == item.ProductId);
+            Console.WriteLine();
+            if (existingItem != null)
+			{
+				existingItem.Count++;
+			}
+			else
+			{
+				cartItems.Add(item);
+			}
+
+			UpdateCartItems2(cartItems); // Intakes List of ShoppingCart
+		}
+
+		public List<ShoppingCart> GetAll2()
+		{
+			List<ShoppingCart> cartItems = new List<ShoppingCart>();
+			var request = _httpContextAccessor.HttpContext.Request;
+
+			if (request.Cookies.ContainsKey("CartCookie2"))
+			{
+				string cartCookie = request.Cookies["CartCookie2"];
+				cartItems = JsonConvert.DeserializeObject<List<ShoppingCart>>(cartCookie);
+			}
+
+			return cartItems;
+		}
+
+		public List<CartItem> GetAll()
         {
             List<CartItem> cartItems = new List<CartItem>();
             var request = _httpContextAccessor.HttpContext.Request;
@@ -77,5 +108,15 @@ namespace GameStore.DataAccess.Repository
                 Expires = DateTime.Now.AddDays(30)
             });
         }
-    }
+
+		private void UpdateCartItems2(List<ShoppingCart> cartItems)
+		{
+			var response = _httpContextAccessor.HttpContext.Response;
+			string cartJson = JsonConvert.SerializeObject(cartItems);
+			response.Cookies.Append("CartCookie2", cartJson, new CookieOptions
+			{
+				Expires = DateTime.Now.AddDays(30)
+			});
+		}
+	}
 }
