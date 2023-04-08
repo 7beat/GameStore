@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BookStore.DataAccess.Repository.IRepository;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,8 +13,12 @@ namespace GameStore.DataAccess.Repository.IRepository
         IGenreRepository Genre { get; }
         IProductRepository Product { get; }
         ICookieShoppingCartRepository CookieShoppingCart { get; }
+		IShoppingCartRepository ShoppingCart { get; }
+		IApplicationUserRepository ApplicationUser { get; }
+		IOrderDetailRepository OrderDetail { get; }
+		IOrderHeaderRepository OrderHeader { get; }
 
-        void Save();
+		void Save();
         Task SaveAsync();
     }
 }
