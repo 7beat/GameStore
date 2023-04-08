@@ -73,11 +73,13 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             return View(cartVM);
         }
 
-		public IActionResult Plus(int cartId)
+		public async Task<IActionResult> Plus(int cartId)
 		{
             if (User.Identity.IsAuthenticated)
             {
-				// Handle Db Cart
+				var cart = await _unitOfWork.ShoppingCart.GetFirstOrDefaultAsync(x => x.Id == cartId);
+				_unitOfWork.ShoppingCart.IncrementCount(cart, 1);
+				_unitOfWork.Save();
 			}
 			else
             {
@@ -88,11 +90,21 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			return RedirectToAction(nameof(Index));
 		}
 
-		public IActionResult Minus(int cartId)
+		public async Task<IActionResult> Minus(int cartId)
         {
 			if (User.Identity.IsAuthenticated)
 			{
-				// Handle Db Cart
+				var cart = await _unitOfWork.ShoppingCart.GetFirstOrDefaultAsync(x => x.Id == cartId);
+
+				if (cart.Count <= 1)
+				{
+					_unitOfWork.ShoppingCart.Remove(cart);
+				}
+				else
+				{
+					_unitOfWork.ShoppingCart.DecrementCount(cart, 1);
+				}
+				_unitOfWork.Save();
 			}
 			else
 			{
@@ -103,11 +115,13 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			return RedirectToAction(nameof(Index));
 		}
 
-		public IActionResult Remove(int cartId)
+		public async Task<IActionResult> Remove(int cartId)
 		{
 			if (User.Identity.IsAuthenticated)
 			{
-				// Handle Db Cart
+				var cart = await _unitOfWork.ShoppingCart.GetFirstOrDefaultAsync(x => x.Id == cartId);
+				_unitOfWork.ShoppingCart.Remove(cart);
+				_unitOfWork.Save();
 			}
 			else
 			{
