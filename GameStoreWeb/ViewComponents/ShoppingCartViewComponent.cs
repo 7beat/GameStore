@@ -20,10 +20,9 @@ namespace GameStoreWeb.ViewComponents
         {
             if (User.Identity.IsAuthenticated)
             {
-				var claimsIdentity = (ClaimsIdentity)User.Identity;
-				var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+                var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-                var cartItems = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == claim.Value);
+                var cartItems = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == userId);
 
                 int totalQuantity = 0;
 
