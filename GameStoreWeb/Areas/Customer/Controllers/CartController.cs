@@ -6,6 +6,7 @@ using GameStore.Utility;
 using GameStoreWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Stripe;
 using Stripe.Checkout;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -162,6 +163,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                 Mode = "payment",
                 SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
                 CancelUrl = domain + $"customer/cart/index",
+                //CustomerEmail = ""
             };
 
             foreach (var item in ShoppingCartVM.ListCart)
@@ -190,6 +192,31 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 
             Response.Headers.Add("Location", session.Url);
             return new StatusCodeResult(303);
+        }
+
+        public IActionResult OrderConfirmation(int id)
+        {
+            OrderHeader orderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(x => x.Id == id, includeProperties: "ApplicationUser");
+            
+            var service = new SessionService();
+            Session session = service.Get(orderHeader.SessionId);
+
+            if (session.PaymentStatus.ToLower() == "paid")
+            {
+                _unitOfWork.OrderHeader.UpdateStripePaymentID(id, orderHeader.SessionId, session.PaymentIntentId);
+                _unitOfWork.OrderHeader.UpdateStatus(id, AppConsts.StatusApproved, AppConsts.PaymentStatusApproved);
+                _unitOfWork.Save();
+            }
+
+            // Send email
+            //_emailSender.SendEmailAsync(orderHeader.ApplicationUser.Email, "New Order - GameStore", "<p>New Order Created</p>");
+
+            List<ShoppingCart> shoppingCarts = _unitOfWork.ShoppingCart.GetAll().Where(x => x.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
+
+            _unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
+            _unitOfWork.Save();
+
+            return View(id);
         }
 
         public async Task<IActionResult> Plus(int cartId)
