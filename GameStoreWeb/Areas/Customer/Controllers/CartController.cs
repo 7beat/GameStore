@@ -107,17 +107,33 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 		[ValidateAntiForgeryToken]
         public async Task<IActionResult> SummaryPost()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            ShoppingCartVM.ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == userId, "Product");
-
-            ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
-            ShoppingCartVM.OrderHeader.ApplicationUserId = userId;
-
-            foreach (var cart in ShoppingCartVM.ListCart)
+            if (User.Identity.IsAuthenticated)
             {
-                cart.Price = (cart.Product.Price * cart.Count);
-                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                ShoppingCartVM.ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == userId, "Product");
+
+                ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
+                ShoppingCartVM.OrderHeader.ApplicationUserId = userId;
+
+                foreach (var cart in ShoppingCartVM.ListCart)
+                {
+                    cart.Price = (cart.Product.Price * cart.Count);
+                    ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
+                }
+            }
+            else
+            {
+                ShoppingCartVM.ListCart = GetCookieCartProducts();
+
+                ShoppingCartVM.OrderHeader.GuestEmailAddress = "Email";
+                ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
+
+                foreach (var cart in ShoppingCartVM.ListCart)
+                {
+                    cart.Price = (cart.Product.Price * cart.Count);
+                    ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
+                }
             }
 
 			ShoppingCartVM.OrderHeader.PaymentStatus = AppConsts.PaymentStatusPending;
@@ -130,7 +146,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             {
                 OrderDetail orderDetail = new()
                 {
-                    ProductId = cart.ProductId,
+                    ProductId = cart.ProductId, // Product.Id
                     OrderId = ShoppingCartVM.OrderHeader.Id,
                     Price = cart.Price,
                     Count = cart.Count
@@ -245,7 +261,8 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				shoppingCarts.Add(new()
 				{
                     Product = _unitOfWork.Product.GetFirstOrDefault(x => x.Id == item.ProductId),
-					Count = item.Count
+                    ProductId = item.ProductId,
+					Count = item.Count,
 				});
 			}
 			return shoppingCarts;
