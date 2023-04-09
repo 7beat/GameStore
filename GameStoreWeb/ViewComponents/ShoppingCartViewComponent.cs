@@ -37,12 +37,12 @@ namespace GameStoreWeb.ViewComponents
             if (Request.Cookies.ContainsKey(AppConsts.CookieCart))
             {
                 string cartCookie = Request.Cookies[AppConsts.CookieCart];
-                var cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartCookie);
+                var cartItems = JsonConvert.DeserializeObject<List<ShoppingCart>>(cartCookie);
                 int totalQuantity = 0;
 
                 foreach (var item in cartItems)
                 {
-                    totalQuantity += item.Quantity;
+                    totalQuantity += item.Count;
                 }
 
                 return View(totalQuantity);
