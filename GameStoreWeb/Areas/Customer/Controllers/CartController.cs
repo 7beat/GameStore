@@ -59,7 +59,59 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             return View(ShoppingCartVM);
         }
 
-		public async Task<IActionResult> Plus(int cartId)
+        public async Task<IActionResult> Summary()
+        {
+			if (User.Identity.IsAuthenticated)
+			{
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                ShoppingCartVM = new ShoppingCartVM()
+                {
+                    ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == userId, "Product", "ApplicationUser"),
+                    OrderHeader = new()
+                };
+
+                ShoppingCartVM.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser.GetFirstOrDefault(x => x.Id == userId);
+
+                ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.OrderHeader.ApplicationUser.UserName;
+                ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
+                ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
+                ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeader.ApplicationUser.City;
+                ShoppingCartVM.OrderHeader.State = ShoppingCartVM.OrderHeader.ApplicationUser.State;
+                ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.PostalCode;
+
+                foreach (var cart in ShoppingCartVM.ListCart)
+                {
+                    ShoppingCartVM.OrderHeader.OrderTotal += (cart.Product.Price * cart.Count);
+                }
+			}
+			else
+			{
+                ShoppingCartVM = new()
+                {
+                    ListCart = GetCookieCartProducts(),
+                    OrderHeader = new()
+                };
+                foreach (var cart in ShoppingCartVM.ListCart)
+                {
+                    ShoppingCartVM.OrderHeader.OrderTotal += (cart.Product.Price * cart.Count);
+                }
+            }
+
+            return View(ShoppingCartVM);
+        }
+
+        [HttpPost]
+		[ActionName(nameof(Summary))]
+		[ValidateAntiForgeryToken]
+        public async Task<IActionResult> SummaryPost()
+        {
+            // Your code for HTTP POST action
+
+            return View();
+        }
+
+        public async Task<IActionResult> Plus(int cartId)
 		{
             if (User.Identity.IsAuthenticated)
             {
