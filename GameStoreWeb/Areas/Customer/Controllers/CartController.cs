@@ -30,34 +30,30 @@ namespace GameStoreWeb.Areas.Customer.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-				var claimsIdentity = (ClaimsIdentity)User.Identity;
-				var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
 				ShoppingCartVM = new ShoppingCartVM()
 				{
-					ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == claim.Value, "Product"),
+					ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == userId, "Product"),
 					OrderHeader = new(),
 				};
 				foreach (var cart in ShoppingCartVM.ListCart)
 				{
 					ShoppingCartVM.OrderHeader.OrderTotal += (cart.Product.Price * cart.Count);
 				}
-				return View(ShoppingCartVM);
 			}
-
-			// ToDo: Fix logic, else
-
-			ShoppingCartVM = new()
+			else
 			{
-				ListCart = GetCookieCartProducts(),
-				OrderHeader = new()
-			};
-			foreach (var cart in ShoppingCartVM.ListCart)
-			{
-				ShoppingCartVM.OrderHeader.OrderTotal += (cart.Product.Price * cart.Count);
+				ShoppingCartVM = new()
+				{
+					ListCart = GetCookieCartProducts(),
+					OrderHeader = new()
+				};
+				foreach (var cart in ShoppingCartVM.ListCart)
+				{
+					ShoppingCartVM.OrderHeader.OrderTotal += (cart.Product.Price * cart.Count);
+				}
 			}
-
-			Console.WriteLine(ShoppingCartVM.ListCart.Count());
             return View(ShoppingCartVM);
         }
 
@@ -120,7 +116,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			return RedirectToAction(nameof(Index));
 		}
 
-		public IEnumerable<ShoppingCart> GetCookieCartProducts()
+		private IEnumerable<ShoppingCart> GetCookieCartProducts()
 		{
 			var cartJson = _unitOfWork.CookieShoppingCart.GetAll();
 			List<ShoppingCart> shoppingCarts = new();
@@ -136,6 +132,5 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			var test = shoppingCarts.First().Count;
 			return shoppingCarts;
 		}
-
 	}
 }
