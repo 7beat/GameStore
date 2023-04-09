@@ -129,7 +129,6 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 					Count = item.Count
 				});
 			}
-			var test = shoppingCarts.First().Count;
 			return shoppingCarts;
 		}
 	}
