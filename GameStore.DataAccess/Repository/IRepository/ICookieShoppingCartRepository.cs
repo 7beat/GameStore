@@ -4,12 +4,8 @@ namespace GameStore.DataAccess.Repository.IRepository
 {
     public interface ICookieShoppingCartRepository
     {
-        List<CartItem> GetAll();
-        void Add(CartItem item);
-        void Update(CartItem item);
-
-        // Test
-        void Add(ShoppingCart item);
-        List<ShoppingCart> GetAll2();
+		List<ShoppingCart> GetAll();
+		void Add(ShoppingCart item);
+		void Update(ShoppingCart item);
     }
 }
