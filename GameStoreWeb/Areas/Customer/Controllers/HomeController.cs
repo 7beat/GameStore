@@ -16,11 +16,13 @@ namespace GameStoreWeb.Areas.Customer.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICookieShoppingCartRepository _cookieCartRepository;
 
-        public HomeController(ILogger<HomeController> logger, IUnitOfWork unitOfWork)
+        public HomeController(ILogger<HomeController> logger, IUnitOfWork unitOfWork, ICookieShoppingCartRepository cookieCartRepository)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _cookieCartRepository = cookieCartRepository;
         }
 
         public async Task<IActionResult> Index(string? searchQuery)
@@ -81,7 +83,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             else
             {
                 // ToDo: Quantity increased
-				_unitOfWork.CookieShoppingCart.Add(new ShoppingCart
+				_cookieCartRepository.Add(new ShoppingCart
 				{
 					ProductId = shoppingCart.ProductId,
 					Count = 1

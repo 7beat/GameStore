@@ -16,7 +16,6 @@ namespace GameStore.DataAccess.Repository
         public IPlatformRepository Platform { get; private set; }
         public IGenreRepository Genre { get; private set; }
         public IProductRepository Product { get; private set; }
-        public ICookieShoppingCartRepository CookieShoppingCart { get; private set; }
 		public IShoppingCartRepository ShoppingCart { get; private set; }
 		public IApplicationUserRepository ApplicationUser { get; private set; }
 		public IOrderHeaderRepository OrderHeader { get; private set; }
@@ -35,12 +34,6 @@ namespace GameStore.DataAccess.Repository
 			OrderHeader = new OrderHeaderRepository(_db);
 			OrderDetail = new OrderDetailRepository(_db);
 		}
-
-        public UnitOfWork(ApplicationDbContext db, IHttpContextAccessor httpContextAccessor)
-            : this(db) // Call the other constructor to initialize common dependencies
-        {
-            CookieShoppingCart = new CookieShoppingCartRepository(httpContextAccessor);
-        }
 
         public void Save()
         {

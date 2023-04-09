@@ -20,6 +20,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ICookieShoppingCartRepository, CookieShoppingCartRepository>();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddRazorPages();

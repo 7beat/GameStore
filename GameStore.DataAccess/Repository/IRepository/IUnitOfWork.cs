@@ -12,7 +12,6 @@ namespace GameStore.DataAccess.Repository.IRepository
         IPlatformRepository Platform { get; }
         IGenreRepository Genre { get; }
         IProductRepository Product { get; }
-        ICookieShoppingCartRepository CookieShoppingCart { get; }
 		IShoppingCartRepository ShoppingCart { get; }
 		IApplicationUserRepository ApplicationUser { get; }
 		IOrderDetailRepository OrderDetail { get; }

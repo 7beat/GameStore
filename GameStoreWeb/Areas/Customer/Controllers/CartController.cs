@@ -16,14 +16,16 @@ namespace GameStoreWeb.Areas.Customer.Controllers
     {
         private readonly ILogger<CartController> _logger;
         private readonly IUnitOfWork _unitOfWork;
+		private readonly ICookieShoppingCartRepository _cookieCartRepository;
 
 		[BindProperty]
 		public ShoppingCartVM ShoppingCartVM { get; set; }
 
-		public CartController(ILogger<CartController> logger, IUnitOfWork unitOfWork)
+		public CartController(ILogger<CartController> logger, IUnitOfWork unitOfWork, ICookieShoppingCartRepository cookieCartRepository)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
+			_cookieCartRepository = cookieCartRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -67,9 +69,9 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			}
 			else
             {
-                var cookieCart = _unitOfWork.CookieShoppingCart.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
+                var cookieCart = _cookieCartRepository.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
                 cookieCart.Count++;
-                _unitOfWork.CookieShoppingCart.Update(cookieCart);
+                _cookieCartRepository.Update(cookieCart);
             }
 			return RedirectToAction(nameof(Index));
 		}
@@ -92,9 +94,9 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			}
 			else
 			{
-				var cookieCart = _unitOfWork.CookieShoppingCart.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
+				var cookieCart = _cookieCartRepository.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
 				cookieCart.Count--;
-				_unitOfWork.CookieShoppingCart.Update(cookieCart);
+				_cookieCartRepository.Update(cookieCart);
 			}
 			return RedirectToAction(nameof(Index));
 		}
@@ -109,16 +111,16 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			}
 			else
 			{
-				var cookieCart = _unitOfWork.CookieShoppingCart.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
+				var cookieCart = _cookieCartRepository.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
 				cookieCart.Count = 0;
-				_unitOfWork.CookieShoppingCart.Update(cookieCart);
+				_cookieCartRepository.Update(cookieCart);
 			}
 			return RedirectToAction(nameof(Index));
 		}
 
 		private IEnumerable<ShoppingCart> GetCookieCartProducts()
 		{
-			var cartJson = _unitOfWork.CookieShoppingCart.GetAll();
+			var cartJson = _cookieCartRepository.GetAll();
 			List<ShoppingCart> shoppingCarts = new();
 
 			foreach (var item in cartJson)
