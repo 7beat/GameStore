@@ -37,7 +37,6 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				{
 					ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == claim.Value, "Product"),
 					OrderHeader = new(),
-					CartItems = null
 				};
 				foreach (var cart in ShoppingCartVM.ListCart)
 				{
@@ -46,31 +45,20 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				return View(ShoppingCartVM);
 			}
 
+			// ToDo: Fix logic, else
 
-            List<Product> products = new();
-
-            var cookieCart = _unitOfWork.CookieShoppingCart.GetAll();
-            double cartTotal = 0;
-
-            foreach (var item in cookieCart)
-            {
-                var product = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == item.ProductId);
-                cartTotal += (product.Price * item.Quantity);
-                products.Add(product);
-            }
-
-            ShoppingCartVM cartVM = new ShoppingCartVM()
-            {
-                CartItems = cookieCart, 
-                CartTotal = cartTotal
-            };
-
-            foreach (var item in cartVM.CartItems)
-            {
-                item.Product = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == item.ProductId);
+			ShoppingCartVM = new()
+			{
+				ListCart = GetCookieCartProducts(),
+				OrderHeader = new()
+			};
+			foreach (var cart in ShoppingCartVM.ListCart)
+			{
+				ShoppingCartVM.OrderHeader.OrderTotal += (cart.Product.Price * cart.Count);
 			}
 
-            return View(cartVM);
+			Console.WriteLine(ShoppingCartVM.ListCart.Count());
+            return View(ShoppingCartVM);
         }
 
 		public async Task<IActionResult> Plus(int cartId)
@@ -84,7 +72,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			else
             {
                 var cookieCart = _unitOfWork.CookieShoppingCart.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
-                cookieCart.Quantity++;
+                cookieCart.Count++;
                 _unitOfWork.CookieShoppingCart.Update(cookieCart);
             }
 			return RedirectToAction(nameof(Index));
@@ -109,7 +97,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			else
 			{
 				var cookieCart = _unitOfWork.CookieShoppingCart.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
-				cookieCart.Quantity--;
+				cookieCart.Count--;
 				_unitOfWork.CookieShoppingCart.Update(cookieCart);
 			}
 			return RedirectToAction(nameof(Index));
@@ -126,10 +114,27 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			else
 			{
 				var cookieCart = _unitOfWork.CookieShoppingCart.GetAll().Where(x => x.ProductId == cartId).SingleOrDefault();
-				cookieCart.Quantity = 0;
+				cookieCart.Count = 0;
 				_unitOfWork.CookieShoppingCart.Update(cookieCart);
 			}
 			return RedirectToAction(nameof(Index));
+		}
+
+		public IEnumerable<ShoppingCart> GetCookieCartProducts()
+		{
+			var cartJson = _unitOfWork.CookieShoppingCart.GetAll();
+			List<ShoppingCart> shoppingCarts = new();
+
+			foreach (var item in cartJson)
+			{
+				shoppingCarts.Add(new()
+				{
+					Product = _unitOfWork.Product.GetFirstOrDefault(x => x.Id == item.ProductId),
+					Count = item.Count
+				});
+			}
+			var test = shoppingCarts.First().Count;
+			return shoppingCarts;
 		}
 
 	}

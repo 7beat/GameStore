@@ -80,28 +80,13 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             }
             else
             {
-				List<CartItem> cartItems = new List<CartItem>();
-
-				var productDb = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == shoppingCart.ProductId);
-
-				CartItem existingItem = _unitOfWork.CookieShoppingCart.GetAll().FirstOrDefault(item => item.ProductId == shoppingCart.ProductId);
-
-				if (existingItem != null)
+                // ToDo: Quantity increased
+				_unitOfWork.CookieShoppingCart.Add(new ShoppingCart
 				{
-                    await Console.Out.WriteLineAsync("NOT IMPLEMENTED");
-                    //existingItem.Quantity++;
-                    //_unitOfWork.CookieShoppingCart.Update(existingItem);
-                    //TempData["success"] = "Quantity increased by 1";
-                }
-				else
-				{
-					_unitOfWork.CookieShoppingCart.Add(new ShoppingCart
-					{
-						ProductId = productDb.Id,
-                        Count = 1
-					});
-					TempData["success"] = "Added to Shopping Cart!";
-				}
+					ProductId = shoppingCart.ProductId,
+					Count = 1
+				});
+				TempData["success"] = "Added to Shopping Cart!";
 			}
 
             return RedirectToAction(nameof(Index));
@@ -125,5 +110,5 @@ namespace GameStoreWeb.Areas.Customer.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-    }
+	}
 }
