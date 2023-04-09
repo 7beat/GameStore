@@ -46,7 +46,17 @@ namespace GameStore.DataAccess.Repository
 			return cartItems;
 		}
 
-		public void Update(ShoppingCart item)
+        public void RemoveCart()
+        {
+            var response = _httpContextAccessor.HttpContext.Response;
+
+            response.Cookies.Append(AppConsts.CookieCart, string.Empty, new CookieOptions
+            {
+                Expires = DateTime.Now.AddDays(-1)
+            });
+        }
+
+        public void Update(ShoppingCart item)
 		{
 			List<ShoppingCart> cartItems = GetAll();
 			var existingItem = cartItems.FirstOrDefault(x => x.ProductId == item.ProductId);

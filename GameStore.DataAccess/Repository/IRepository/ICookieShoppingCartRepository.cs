@@ -7,5 +7,6 @@ namespace GameStore.DataAccess.Repository.IRepository
 		List<ShoppingCart> GetAll();
 		void Add(ShoppingCart item);
 		void Update(ShoppingCart item);
+        void RemoveCart();
     }
 }
