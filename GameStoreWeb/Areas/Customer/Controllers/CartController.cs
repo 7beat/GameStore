@@ -127,7 +127,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			{
 				shoppingCarts.Add(new()
 				{
-					Product = _unitOfWork.Product.GetFirstOrDefault(x => x.Id == item.ProductId),
+                    Product = _unitOfWork.Product.GetFirstOrDefault(x => x.Id == item.ProductId),
 					Count = item.Count
 				});
 			}
