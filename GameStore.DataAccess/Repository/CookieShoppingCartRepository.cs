@@ -3,46 +3,24 @@ using GameStore.Models;
 using GameStore.Utility;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameStore.DataAccess.Repository
 {
-    public class CookieShoppingCartRepository : ICookieShoppingCartRepository
-    {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+	public class CookieShoppingCartRepository : ICookieShoppingCartRepository
+	{
+		private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CookieShoppingCartRepository(IHttpContextAccessor httpContextAccessor)
-        {
-            _httpContextAccessor = httpContextAccessor;
-        }
-
-        public void Add(CartItem item)
-        {
-            List<CartItem> cartItems = GetAll();
-            CartItem existingItem = cartItems.FirstOrDefault(x => x.ProductId == item.ProductId);
-
-            if (existingItem != null)
-            {
-                existingItem.Quantity++;
-            }
-            else
-            {
-                cartItems.Add(item);
-            }
-
-            UpdateCartItems(cartItems);
-        }
+		public CookieShoppingCartRepository(IHttpContextAccessor httpContextAccessor)
+		{
+			_httpContextAccessor = httpContextAccessor;
+		}
 
 		public void Add(ShoppingCart item)
 		{
-			List<ShoppingCart> cartItems = GetAll2();
+			List<ShoppingCart> cartItems = GetAll();
 			ShoppingCart existingItem = cartItems.FirstOrDefault(x => x.ProductId == item.ProductId);
-            Console.WriteLine();
-            if (existingItem != null)
+
+			if (existingItem != null)
 			{
 				existingItem.Count++;
 			}
@@ -51,69 +29,50 @@ namespace GameStore.DataAccess.Repository
 				cartItems.Add(item);
 			}
 
-			UpdateCartItems2(cartItems); // Intakes List of ShoppingCart
+			UpdateCartItems(cartItems);
 		}
 
-		public List<ShoppingCart> GetAll2()
+		public List<ShoppingCart> GetAll()
 		{
 			List<ShoppingCart> cartItems = new List<ShoppingCart>();
 			var request = _httpContextAccessor.HttpContext.Request;
 
-			if (request.Cookies.ContainsKey("CartCookie2"))
+			if (request.Cookies.ContainsKey(AppConsts.CookieCart))
 			{
-				string cartCookie = request.Cookies["CartCookie2"];
+				string cartCookie = request.Cookies[AppConsts.CookieCart];
 				cartItems = JsonConvert.DeserializeObject<List<ShoppingCart>>(cartCookie);
 			}
 
 			return cartItems;
 		}
 
-		public List<CartItem> GetAll()
-        {
-            List<CartItem> cartItems = new List<CartItem>();
-            var request = _httpContextAccessor.HttpContext.Request;
-
-            if (request.Cookies.ContainsKey(AppConsts.CookieCart))
-            {
-                string cartCookie = request.Cookies[AppConsts.CookieCart];
-                cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartCookie);
-            }
-
-            return cartItems;
-        }
-
-		public void Update(CartItem item) // do usunięcia ma 0
+		public void Update(ShoppingCart item)
 		{
-			List<CartItem> cartItems = GetAll();
-			CartItem existingItem = cartItems.FirstOrDefault(x => x.ProductId == item.ProductId);
-
-			if (existingItem != null && item.Quantity > 0)
-			{
-				existingItem.Quantity = item.Quantity;
-			}
-			else
-			{
-				cartItems.Remove(existingItem);
-			}
-
-			UpdateCartItems(cartItems);
+			throw new NotImplementedException();
 		}
 
-		private void UpdateCartItems(List<CartItem> cartItems)
-        {
-            var response = _httpContextAccessor.HttpContext.Response;
-            string cartJson = JsonConvert.SerializeObject(cartItems);
-            response.Cookies.Append(AppConsts.CookieCart, cartJson, new CookieOptions
-            {
-                Expires = DateTime.Now.AddDays(30)
-            });
-        }
+		//public void Update(CartItem item) // do usunięcia ma 0
+		//{
+		//	List<ShoppingCart> cartItems = GetAll();
+		//	var existingItem = cartItems.FirstOrDefault(x => x.ProductId == item.ProductId);
 
-		private void UpdateCartItems2(List<ShoppingCart> cartItems)
+		//	if (existingItem != null && item.Quantity > 0)
+		//	{
+		//		existingItem.Quantity = item.Quantity;
+		//	}
+		//	else
+		//	{
+		//		cartItems.Remove(existingItem);
+		//	}
+
+		//	UpdateCartItems(cartItems);
+		//}
+
+		private void UpdateCartItems(List<ShoppingCart> cartItems)
 		{
 			var response = _httpContextAccessor.HttpContext.Response;
 			string cartJson = JsonConvert.SerializeObject(cartItems);
-			response.Cookies.Append("CartCookie2", cartJson, new CookieOptions
+			response.Cookies.Append(AppConsts.CookieCart, cartJson, new CookieOptions
 			{
 				Expires = DateTime.Now.AddDays(30)
 			});
