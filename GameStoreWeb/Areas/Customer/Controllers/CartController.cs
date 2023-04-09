@@ -141,7 +141,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			ShoppingCartVM.OrderHeader.OrderStatus = AppConsts.StatusPending;
 
             _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
-            _unitOfWork.Save();
+            await _unitOfWork.SaveAsync();
 
             foreach (var cart in ShoppingCartVM.ListCart)
             {
@@ -153,7 +153,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                     Count = cart.Count
                 };
                 _unitOfWork.OrderDetail.Add(orderDetail);
-                _unitOfWork.Save();
+                await _unitOfWork.SaveAsync();
             }
 
             var domain = $"{Request.Scheme}://{Request.Host}/";
@@ -194,7 +194,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             return new StatusCodeResult(303);
         }
 
-        public IActionResult OrderConfirmation(int id)
+        public async Task<IActionResult> OrderConfirmation(int id)
         {
             OrderHeader orderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(x => x.Id == id, includeProperties: "ApplicationUser");
             
@@ -205,16 +205,23 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             {
                 _unitOfWork.OrderHeader.UpdateStripePaymentID(id, orderHeader.SessionId, session.PaymentIntentId);
                 _unitOfWork.OrderHeader.UpdateStatus(id, AppConsts.StatusApproved, AppConsts.PaymentStatusApproved);
-                _unitOfWork.Save();
+                await _unitOfWork.SaveAsync();
             }
 
             // Send email
             //_emailSender.SendEmailAsync(orderHeader.ApplicationUser.Email, "New Order - GameStore", "<p>New Order Created</p>");
 
-            List<ShoppingCart> shoppingCarts = _unitOfWork.ShoppingCart.GetAll().Where(x => x.ApplicationUserId == orderHeader.ApplicationUserId).ToList();
+            if (User.Identity.IsAuthenticated)
+            {
+                var shoppingCarts = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == orderHeader.ApplicationUserId);
 
-            _unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
-            _unitOfWork.Save();
+                _unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
+                await _unitOfWork.SaveAsync();
+            }
+            else
+            {
+                _cookieCartRepository.RemoveCart();
+            }
 
             return View(id);
         }
@@ -225,7 +232,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             {
 				var cart = await _unitOfWork.ShoppingCart.GetFirstOrDefaultAsync(x => x.Id == cartId);
 				_unitOfWork.ShoppingCart.IncrementCount(cart, 1);
-				_unitOfWork.Save();
+				await _unitOfWork.SaveAsync();
 			}
 			else
             {
@@ -250,7 +257,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				{
 					_unitOfWork.ShoppingCart.DecrementCount(cart, 1);
 				}
-				_unitOfWork.Save();
+				await _unitOfWork.SaveAsync();
 			}
 			else
 			{
@@ -267,7 +274,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			{
 				var cart = await _unitOfWork.ShoppingCart.GetFirstOrDefaultAsync(x => x.Id == cartId);
 				_unitOfWork.ShoppingCart.Remove(cart);
-				_unitOfWork.Save();
+				await _unitOfWork.SaveAsync();
 			}
 			else
 			{
