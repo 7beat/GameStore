@@ -127,7 +127,6 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             {
                 ShoppingCartVM.ListCart = GetCookieCartProducts();
 
-                ShoppingCartVM.OrderHeader.GuestEmailAddress = "Email";
                 ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
 
                 foreach (var cart in ShoppingCartVM.ListCart)
