@@ -217,18 +217,19 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 			}
 			else
 			{
-				if (ShoppingCartVM.OrderHeader.IsDigital)
+				// ToDo: Extract to method(SendGameKeys)
+				if (orderHeader.IsDigital)
 				{
 					string productKeys = string.Empty;
 					foreach (var item in ShoppingCartVM.ListCart)
 					{
-						productKeys += $"{item.Product.Title} - {Guid.NewGuid()}"; 
+						productKeys += $"<li>{item.Product.Title} - {Guid.NewGuid()}</li>";
 					}
 
-					await _emailSender.SendEmailAsync(orderHeader.GuestEmailAddress, "New Order - GameStore", 
-						 @$"<p>New Order Created</p>
-									<b>Your games:</b> <br />
-									<ul>{productKeys}</ul>");
+					await _emailSender.SendEmailAsync(orderHeader.GuestEmailAddress, "New Order - 7beat GameStore",
+						@$"<p>New Order Created</p>
+								<b>Your games:</b> <br />
+								<ul>{productKeys}</ul>");
 
 					_unitOfWork.OrderHeader.UpdateStatus(id, AppConsts.StatusShipped);
 				}
