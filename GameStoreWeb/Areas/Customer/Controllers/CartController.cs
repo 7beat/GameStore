@@ -128,6 +128,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                 ShoppingCartVM.ListCart = GetCookieCartProducts();
 
                 ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
+                ShoppingCartVM.OrderHeader.Name = string.Empty;
 
                 foreach (var cart in ShoppingCartVM.ListCart)
                 {
@@ -162,7 +163,6 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                 Mode = "payment",
                 SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
                 CancelUrl = domain + $"customer/cart/index",
-                //CustomerEmail = ""
             };
 
             foreach (var item in ShoppingCartVM.ListCart)
