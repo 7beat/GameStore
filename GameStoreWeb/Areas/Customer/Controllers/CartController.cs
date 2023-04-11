@@ -221,15 +221,15 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				if (orderHeader.IsDigital)
 				{
 					string productKeys = string.Empty;
-					foreach (var item in ShoppingCartVM.ListCart)
+					foreach (var item in GetCookieCartProducts())
 					{
 						productKeys += $"<li>{item.Product.Title} - {Guid.NewGuid()}</li>";
 					}
 
-					await _emailSender.SendEmailAsync(orderHeader.GuestEmailAddress, "New Order - 7beat GameStore",
-						@$"<p>New Order Created</p>
-								<b>Your games:</b> <br />
-								<ul>{productKeys}</ul>");
+					//await _emailSender.SendEmailAsync(orderHeader.GuestEmailAddress, "New Order - 7beat GameStore",
+					//	@$"<p>New Order Created</p>
+					//			<b>Your games:</b> <br />
+					//			<ul>{productKeys}</ul>");
 
 					_unitOfWork.OrderHeader.UpdateStatus(id, AppConsts.StatusShipped);
 				}
