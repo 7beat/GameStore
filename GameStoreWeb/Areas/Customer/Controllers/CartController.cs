@@ -204,33 +204,29 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				_unitOfWork.OrderHeader.UpdateStatus(id, AppConsts.StatusApproved, AppConsts.PaymentStatusApproved);
 				await _unitOfWork.SaveAsync();
 			}
-
-			// Send email
-			//_emailSender.SendEmailAsync(orderHeader.ApplicationUser.Email, "New Order - GameStore", "<p>New Order Created</p>");
+			else
+			{
+				return View("Error");
+			}
 
 			if (User.Identity.IsAuthenticated)
 			{
 				var shoppingCarts = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == orderHeader.ApplicationUserId);
+
+				if (orderHeader.IsDigital)
+				{
+					//await SendGameKeyEmailAsync(orderHeader.ApplicationUser.Email, shoppingCarts);
+					_unitOfWork.OrderHeader.UpdateStatus(id, AppConsts.StatusShipped);
+				}
 
 				_unitOfWork.ShoppingCart.RemoveRange(shoppingCarts);
 				await _unitOfWork.SaveAsync();
 			}
 			else
 			{
-				// ToDo: Extract to method(SendGameKeys)
 				if (orderHeader.IsDigital)
 				{
-					string productKeys = string.Empty;
-					foreach (var item in GetCookieCartProducts())
-					{
-						productKeys += $"<li>{item.Product.Title} - {Guid.NewGuid()}</li>";
-					}
-
-					//await _emailSender.SendEmailAsync(orderHeader.GuestEmailAddress, "New Order - 7beat GameStore",
-					//	@$"<p>New Order Created</p>
-					//			<b>Your games:</b> <br />
-					//			<ul>{productKeys}</ul>");
-
+					//await SendGameKeyEmailAsync(orderHeader.GuestEmailAddress, GetCookieCartProducts());
 					_unitOfWork.OrderHeader.UpdateStatus(id, AppConsts.StatusShipped);
 				}
 				_cookieCartRepository.RemoveCart();
@@ -313,6 +309,20 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				});
 			}
 			return shoppingCarts;
+		}
+
+		private async Task SendGameKeyEmailAsync(string to, IEnumerable<ShoppingCart> shoppingCart)
+		{
+			string productKeys = string.Empty;
+			foreach (var item in shoppingCart)
+			{
+				productKeys += $"<li>{item.Product.Title} - {Guid.NewGuid()}</li>";
+			}
+
+			await _emailSender.SendEmailAsync(to, "New Order - 7beat GameStore",
+				@$"<p>New Order Created</p>
+						<b>Your games:</b> <br />
+						<ul>{productKeys}</ul>");
 		}
 	}
 }
