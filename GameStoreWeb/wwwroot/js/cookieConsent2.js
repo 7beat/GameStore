@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    if (!getCookie('cookie_consent')) {
+    if (!getCookie('CookieConsent')) {
         Swal.fire({
             title: 'Cookie Consent',
             text: 'This website uses cookies to ensure you get the best experience. Do you accept the use of cookies?',
@@ -19,7 +19,7 @@ $(document).ready(function () {
             if (result.dismiss === Swal.DismissReason.close) {
                 Swal.fire('Notice', 'This website uses cookies to provide some features. You may experience limited functionality.', 'info');
             } else {
-                setCookie('cookie_consent', 'true', 30);
+                setCookie('CookieConsent', 'true', 30);
                 Swal.fire('Thank you!', 'You have accepted cookies.', 'success');
             }
         });
