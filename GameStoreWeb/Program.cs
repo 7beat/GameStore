@@ -2,6 +2,7 @@ using BookStore.Utility;
 using GameStore.DataAccess.Repository;
 using GameStore.DataAccess.Repository.IRepository;
 using GameStore.Utility;
+using GameStore.Utility.Extensions;
 using GameStoreWeb.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -30,6 +31,8 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
+
+await app.SeedIdentityDb();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
