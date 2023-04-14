@@ -1,9 +1,13 @@
-﻿using GameStore.DataAccess.Repository.IRepository;
+﻿using GameStore.DataAccess.Repository;
+using GameStore.DataAccess.Repository.IRepository;
 using GameStore.Models;
+using GameStore.Models.ViewModels;
+using GameStore.Utility;
 using GameStoreWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Security.Claims;
 
 namespace GameStoreWeb.Areas.Customer.Controllers
 {
@@ -12,11 +16,13 @@ namespace GameStoreWeb.Areas.Customer.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICookieShoppingCartRepository _cookieCartRepository;
 
-        public HomeController(ILogger<HomeController> logger, IUnitOfWork unitOfWork)
+        public HomeController(ILogger<HomeController> logger, IUnitOfWork unitOfWork, ICookieShoppingCartRepository cookieCartRepository)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _cookieCartRepository = cookieCartRepository;
         }
 
         public async Task<IActionResult> Index(string? searchQuery)
@@ -35,54 +41,55 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             return View(productList);
         }
 
-        public async Task<IActionResult> Details(int? productId)
-        {
-            if (productId is null || productId == 0)
-                return NotFound();
-
-            var productDb = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == productId, "Platform", "Genre");
-
-            return View(productDb);
-        }
-
-        // Concept Cookies based Shopping Cart
-        [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Details(int productId)
         {
-            List<CartItem> cartItems = new List<CartItem>();
+            if (productId == 0)
+                return NotFound();
 
-            var productDb = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == productId);
-
-            if (Request.Cookies.ContainsKey("ShoppingCart"))
+            ShoppingCart cartObj = new()
             {
-                string cartCookie = Request.Cookies["ShoppingCart"];
-                cartItems = JsonConvert.DeserializeObject<List<CartItem>>(cartCookie);
-            }
+                Product = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == productId, "Genre", "Platform"),
+				Count = 1,
+				ProductId = productId,
+			};
 
-            CartItem existingItem = cartItems.FirstOrDefault(item => item.ProductId == productId);
+			return View(cartObj);
+        }
 
-            if (existingItem != null)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Details(ShoppingCart shoppingCart)
+        {
+            if (User.Identity.IsAuthenticated)
             {
-                existingItem.Quantity++;
-                TempData["success"] = "Quantity increased by 1";
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                shoppingCart.ApplicationUserId = userId;
+
+				ShoppingCart cartDb = _unitOfWork.ShoppingCart.GetFirstOrDefault(x => x.ApplicationUserId == userId && x.ProductId == shoppingCart.ProductId);
+
+				if (cartDb == null)
+				{
+					_unitOfWork.ShoppingCart.Add(shoppingCart);
+					await _unitOfWork.SaveAsync();
+					TempData["success"] = "Added to Shopping Cart!";
+				}
+				else
+				{
+					_unitOfWork.ShoppingCart.IncrementCount(cartDb, shoppingCart.Count);
+					await _unitOfWork.SaveAsync();
+					TempData["success"] = "Quantity increased by 1";
+				}
             }
             else
             {
-                cartItems.Add(new CartItem
-                {
-                    ProductId = productDb.Id,
-                    ProductName = productDb.Title,
-                    Quantity = 1
-                });
-                TempData["success"] = "Added to Shopping Cart!";
-            }
-
-            string cartJson = JsonConvert.SerializeObject(cartItems);
-            Response.Cookies.Append("ShoppingCart", cartJson, new CookieOptions
-            {
-                Expires = DateTime.Now.AddDays(30)
-            });
+                // ToDo: Quantity increased
+				_cookieCartRepository.Add(new ShoppingCart
+				{
+					ProductId = shoppingCart.ProductId,
+					Count = 1
+				});
+				TempData["success"] = "Added to Shopping Cart!";
+			}
 
             return RedirectToAction(nameof(Index));
         }
@@ -105,12 +112,5 @@ namespace GameStoreWeb.Areas.Customer.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-    }
-
-    public class CartItem
-    {
-        public int ProductId { get; set; }
-        public string ProductName { get; set; }
-        public int Quantity { get; set; }
-    }
+	}
 }

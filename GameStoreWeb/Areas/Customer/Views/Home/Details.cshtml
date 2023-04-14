@@ -1,4 +1,4 @@
-﻿@model Product
+﻿@model ShoppingCart
 @{
     ViewData["Title"] = "Details";
 }
@@ -6,22 +6,22 @@
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-6">
-            <img src="@Model.ImageUrl" class="img-fluid rounded" alt="@Model.Title">
+            <img src="@Model.Product.ImageUrl" class="img-fluid rounded" alt="@Model.Product.Title">
         </div>
         <div class="col-md-6">
-            <h1 class="text-primary">@Model.Title</h1>
-            <p class="text-muted">by @Model.Developer</p>
+            <h1 class="text-primary">@Model.Product.Title</h1>
+            <p class="text-muted">by @Model.Product.Developer</p>
             <div class="d-flex mt-3">
-                <span class="badge bg-info me-2" style="height: 30px;">@Model.Platform.Name</span>
-                <span class="badge bg-warning" style="height: 30px;">@Model.Genre.Name</span>
+                <span class="badge bg-info me-2" style="height: 30px;">@Model.Product.Platform.Name</span>
+                <span class="badge bg-warning" style="height: 30px;">@Model.Product.Genre.Name</span>
             </div>
             <div class="bg-light mt-4 p-3">
                 <h5 class="mb-3">Description</h5>
-                <p class="product-description">@Html.Raw(Model.Description)</p>
+                <p class="product-description">@Html.Raw(Model.Product.Description)</p>
             </div>
             <div class="row mt-3">
                 <div class="col-md-6">
-                    <h5 class="text-success">Price: @Model.Price.ToString("C")</h5>
+                    <h5 class="text-success">Price: @Model.Product.Price.ToString("C")</h5>
                 </div>
             </div>
             <div class="row mt-5">
@@ -31,6 +31,7 @@
                 <div class="col-md-6">
                     <form method="post">
                         <input hidden asp-for="Id" />
+                        <input hidden asp-for="Count" />
                         <button type="submit" value="Add to Cart" class="btn btn-primary btn-block">Add to Cart</button>
                     </form>
                 </div>

@@ -13,6 +13,7 @@ namespace GameStore.DataAccess.Repository.IRepository
         IEnumerable<T> GetAll(params string[] includeProperties);
         void Add(T entity);
         void Remove(T entity);
+        void RemoveRange(IEnumerable<T> entities);
 
         #region Async
 
