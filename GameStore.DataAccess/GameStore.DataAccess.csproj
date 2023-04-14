@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GameStore.Models\GameStore.Models.csproj" />
-    <ProjectReference Include="..\GameStore.Utility\GameStore.Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup>
