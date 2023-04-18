@@ -3,6 +3,7 @@
     public static class AppConsts
     {
         public const string CookieCart = "ShoppingCart";
+        public const string Guest = "Guest";
 
         public const string StatusPending = "Pending";
         public const string StatusApproved = "Approved";
