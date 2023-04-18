@@ -169,8 +169,8 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				{
 					PriceData = new SessionLineItemPriceDataOptions
 					{
-						UnitAmount = (long)(item.Price * 100),
-						Currency = "usd",
+						UnitAmount = (long)(item.Product.Price * 100),
+						Currency = "pln",
 						ProductData = new SessionLineItemPriceDataProductDataOptions
 						{
 							Name = item.Product.Title,
