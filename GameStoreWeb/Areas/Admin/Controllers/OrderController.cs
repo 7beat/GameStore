@@ -30,7 +30,7 @@ namespace GameStoreWeb.Areas.Admin.Controllers
             IEnumerable<OrderHeader> orderHeaders;
             if (User.IsInRole(AppRoles.Admin))
             {
-                orderHeaders = await _unitOfWork.OrderHeader.GetAllAsync(x => x.ApplicationUser != null, nameof(ApplicationUser));
+                orderHeaders = await _unitOfWork.OrderHeader.GetAllAsync(nameof(ApplicationUser));
             }
             else
             {
