@@ -126,9 +126,9 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				ShoppingCartVM.ListCart = GetCookieCartProducts();
 
 				ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
-				ShoppingCartVM.OrderHeader.Name = string.Empty;
+				ShoppingCartVM.OrderHeader.Name = AppConsts.Guest;
 
-				foreach (var cart in ShoppingCartVM.ListCart)
+                foreach (var cart in ShoppingCartVM.ListCart)
 				{
 					cart.Price = (cart.Product.Price * cart.Count);
 					ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
