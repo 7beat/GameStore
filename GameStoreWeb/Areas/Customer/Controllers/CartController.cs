@@ -228,7 +228,8 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				{
 					//await SendGameKeyEmailAsync(orderHeader.GuestEmailAddress, GetCookieCartProducts());
 					_unitOfWork.OrderHeader.UpdateStatus(id, AppConsts.StatusShipped);
-				}
+                    await _unitOfWork.SaveAsync();
+                }
 				_cookieCartRepository.RemoveCart();
 			}
 
