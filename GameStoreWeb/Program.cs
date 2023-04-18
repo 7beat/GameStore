@@ -2,6 +2,7 @@ using BookStore.Utility;
 using GameStore.DataAccess.Repository;
 using GameStore.DataAccess.Repository.IRepository;
 using GameStore.Utility;
+using GameStore.Utility.Extensions;
 using GameStoreWeb.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -29,7 +30,16 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddRazorPages();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = $"/Identity/Account/Login";
+    options.LogoutPath = $"/Identity/Account/Logout";
+    options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
+});
+
 var app = builder.Build();
+
+await app.SeedIdentityDb();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using GameStore.Utility;
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -13,8 +14,6 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     @*dataTables.net*@
     <link rel="stylesheet" href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
-    @*Quill input*@
-    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -33,17 +32,25 @@
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
 
-                        <!-- ToDo: If User.IsInRole -->
-                        <li class="nav-item dropdown"> @*CMS*@
-                            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Content Managment</a> 
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="Platform" asp-action="Index">Platform</a>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="Genre" asp-action="Index">Genre</a>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="Product" asp-action="Index">Product</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" asp-area="Admin" asp-controller="Company" asp-action="Index">Company</a>
+                        @if (User.IsInRole(AppRoles.Admin))
+                        {
+                            @*CMS*@
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Content Managment</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="Platform" asp-action="Index">Platform</a>
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="Genre" asp-action="Index">Genre</a>
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="Product" asp-action="Index">Product</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" asp-area="Admin" asp-controller="Company" asp-action="Index">Company</a>
 
-                            </div>
+                                </div>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="Admin" asp-controller="Order" asp-action="Index">
+                                Manage Orders
+                            </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" asp-area="Customer" asp-controller="Cart" asp-action="Index">
@@ -80,8 +87,6 @@
     <script src="https://cdn.tiny.cloud/1/zuyltggiri7z7ozisnm44sc7xbjdxs6j8rvpm3pd8e0mhqrj/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     @*Datatables.net*@
     <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    @*Quill scripts setup*@
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     @*Sweet Alerts*@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @*Cookies Consent*@

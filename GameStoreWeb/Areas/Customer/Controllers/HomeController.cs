@@ -1,11 +1,7 @@
-﻿using GameStore.DataAccess.Repository;
-using GameStore.DataAccess.Repository.IRepository;
+﻿using GameStore.DataAccess.Repository.IRepository;
 using GameStore.Models;
-using GameStore.Models.ViewModels;
-using GameStore.Utility;
 using GameStoreWeb.Models;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -49,57 +45,20 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             ShoppingCart cartObj = new()
             {
                 Product = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == productId, "Genre", "Platform"),
-				Count = 1,
-				ProductId = productId,
-			};
+                Count = 1,
+                ProductId = productId,
+            };
 
-			return View(cartObj);
+            return View(cartObj);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Details(ShoppingCart shoppingCart)
         {
-            if (User.Identity.IsAuthenticated)
-            {
-				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                shoppingCart.ApplicationUserId = userId;
-
-				ShoppingCart cartDb = _unitOfWork.ShoppingCart.GetFirstOrDefault(x => x.ApplicationUserId == userId && x.ProductId == shoppingCart.ProductId);
-
-				if (cartDb == null)
-				{
-					_unitOfWork.ShoppingCart.Add(shoppingCart);
-					await _unitOfWork.SaveAsync();
-					TempData["success"] = "Added to Shopping Cart!";
-				}
-				else
-				{
-					_unitOfWork.ShoppingCart.IncrementCount(cartDb, shoppingCart.Count);
-					await _unitOfWork.SaveAsync();
-					TempData["success"] = "Quantity increased by 1";
-				}
-            }
-            else
-            {
-                // ToDo: Quantity increased
-				_cookieCartRepository.Add(new ShoppingCart
-				{
-					ProductId = shoppingCart.ProductId,
-					Count = 1
-				});
-				TempData["success"] = "Added to Shopping Cart!";
-			}
+            await AddToCartAsync(shoppingCart);
 
             return RedirectToAction(nameof(Index));
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult AddToCart(int productId)
-        {
-            Console.WriteLine(productId);
-            return Ok();
         }
 
         public IActionResult Privacy()
@@ -112,5 +71,38 @@ namespace GameStoreWeb.Areas.Customer.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-	}
+
+        private async Task AddToCartAsync(ShoppingCart shoppingCart)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                ShoppingCart cartDb = _unitOfWork.ShoppingCart.GetFirstOrDefault(x => x.ApplicationUserId == userId && x.ProductId == shoppingCart.ProductId);
+
+                if (cartDb is null)
+                {
+                    shoppingCart.ApplicationUserId = userId;
+                    _unitOfWork.ShoppingCart.Add(shoppingCart);
+                    await _unitOfWork.SaveAsync();
+                    TempData["success"] = "Added to Shopping Cart!";
+                }
+                else
+                {
+                    _unitOfWork.ShoppingCart.IncrementCount(cartDb, shoppingCart.Count);
+                    await _unitOfWork.SaveAsync();
+                    TempData["success"] = "Quantity increased by 1";
+                }
+            }
+            else
+            {
+                _cookieCartRepository.Add(new ShoppingCart
+                {
+                    ProductId = shoppingCart.ProductId,
+                    Count = 1
+                });
+                TempData["success"] = "Added to Shopping Cart!";
+            }
+        }
+    }
 }
