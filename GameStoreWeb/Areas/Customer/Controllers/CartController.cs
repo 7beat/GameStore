@@ -120,15 +120,6 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 
         private async Task<SessionCreateOptions> ConfigureStripeOptions()
         {
-            ShoppingCartVM.OrderHeader.PaymentStatus = AppConsts.PaymentStatusPending;
-            ShoppingCartVM.OrderHeader.OrderStatus = AppConsts.StatusPending;
-
-            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
-            await _unitOfWork.SaveAsync();
-
-            string successUrl = Url.Action(nameof(OrderConfirmation), "Cart", new { id = ShoppingCartVM.OrderHeader.Id }, protocol: Request.Scheme, host: Request.Host.Value);
-            string cancelUrl = Url.Action(nameof(Index), "Cart", null, protocol: Request.Scheme, host: Request.Host.Value);
-
             SessionCreateOptions options = new()
             {
                 PaymentMethodTypes = new()
@@ -138,9 +129,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                     "p24"
                 },
                 LineItems = new List<SessionLineItemOptions>(),
-                Mode = "payment",
-                SuccessUrl = successUrl,
-                CancelUrl = cancelUrl,
+                Mode = "payment"
             };
 
             if (User.Identity.IsAuthenticated)
@@ -149,7 +138,6 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 
 				ShoppingCartVM.ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == userId, "Product");
 
-				ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
 				ShoppingCartVM.OrderHeader.ApplicationUserId = userId;
 
 				foreach (var cart in ShoppingCartVM.ListCart)
@@ -164,7 +152,6 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             {
                 ShoppingCartVM.ListCart = GetCookieCartProducts();
 
-                ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
                 ShoppingCartVM.OrderHeader.Name = AppConsts.Guest;
 
                 foreach (var cart in ShoppingCartVM.ListCart)
@@ -173,6 +160,19 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                     ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
                 }
             }
+
+            ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
+            ShoppingCartVM.OrderHeader.PaymentStatus = AppConsts.PaymentStatusPending;
+            ShoppingCartVM.OrderHeader.OrderStatus = AppConsts.StatusPending;
+
+            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
+            await _unitOfWork.SaveAsync();
+
+            string successUrl = Url.Action(nameof(OrderConfirmation), "Cart", new { id = ShoppingCartVM.OrderHeader.Id }, protocol: Request.Scheme, host: Request.Host.Value);
+            string cancelUrl = Url.Action(nameof(Index), "Cart", null, protocol: Request.Scheme, host: Request.Host.Value);
+
+			options.SuccessUrl = successUrl;
+			options.CancelUrl = cancelUrl;
 
             foreach (var cart in ShoppingCartVM.ListCart)
             {
