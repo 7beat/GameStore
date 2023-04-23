@@ -105,8 +105,25 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 		[ActionName(nameof(Summary))]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> SummaryPost()
-		{
-			if (User.Identity.IsAuthenticated)
+        {
+            SessionCreateOptions options = await ConfigureStripeOptions();
+
+            var service = new SessionService();
+            Session session = service.Create(options);
+
+            _unitOfWork.OrderHeader.UpdateStripePaymentID(ShoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
+            _unitOfWork.Save();
+
+            Response.Headers.Add("Location", session.Url);
+            return new StatusCodeResult(303);
+        }
+
+        private async Task<SessionCreateOptions> ConfigureStripeOptions()
+        {
+			SessionCreateOptions options;
+            var domain = $"{Request.Scheme}://{Request.Host}/";
+
+            if (User.Identity.IsAuthenticated)
 			{
 				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -120,78 +137,79 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 					cart.Price = (cart.Product.Price * cart.Count);
 					ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
 				}
-			}
-			else
-			{
-				ShoppingCartVM.ListCart = GetCookieCartProducts();
 
-				ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
-				ShoppingCartVM.OrderHeader.Name = AppConsts.Guest;
+				options = new()
+				{
+                    LineItems = new List<SessionLineItemOptions>(),
+                    Mode = "payment",
+                    SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
+                    CancelUrl = domain + $"customer/cart/index",
+					CustomerEmail = User.FindFirstValue(ClaimTypes.Email)
+                };
+            }
+            else
+            {
+                ShoppingCartVM.ListCart = GetCookieCartProducts();
+
+                ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
+                ShoppingCartVM.OrderHeader.Name = AppConsts.Guest;
 
                 foreach (var cart in ShoppingCartVM.ListCart)
-				{
-					cart.Price = (cart.Product.Price * cart.Count);
-					ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
-				}
-			}
+                {
+                    cart.Price = (cart.Product.Price * cart.Count);
+                    ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
+                }
 
-			ShoppingCartVM.OrderHeader.PaymentStatus = AppConsts.PaymentStatusPending;
-			ShoppingCartVM.OrderHeader.OrderStatus = AppConsts.StatusPending;
+                options = new()
+                {
+                    LineItems = new List<SessionLineItemOptions>(),
+                    Mode = "payment",
+                    SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
+                    CancelUrl = domain + $"customer/cart/index"
+                };
+            }
 
-			_unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
-			await _unitOfWork.SaveAsync();
+            ShoppingCartVM.OrderHeader.PaymentStatus = AppConsts.PaymentStatusPending;
+            ShoppingCartVM.OrderHeader.OrderStatus = AppConsts.StatusPending;
 
-			foreach (var cart in ShoppingCartVM.ListCart)
-			{
-				OrderDetail orderDetail = new()
-				{
-					ProductId = cart.ProductId, // Product.Id
-					OrderId = ShoppingCartVM.OrderHeader.Id,
-					Price = cart.Price,
-					Count = cart.Count
-				};
-				_unitOfWork.OrderDetail.Add(orderDetail);
-				await _unitOfWork.SaveAsync();
-			}
+            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
+            await _unitOfWork.SaveAsync();
 
-			var domain = $"{Request.Scheme}://{Request.Host}/";
-			var options = new SessionCreateOptions
-			{
-				LineItems = new List<SessionLineItemOptions>(),
-				Mode = "payment",
-				SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
-				CancelUrl = domain + $"customer/cart/index",
-			};
+            foreach (var cart in ShoppingCartVM.ListCart)
+            {
+                OrderDetail orderDetail = new()
+                {
+                    ProductId = cart.ProductId,
+                    OrderId = ShoppingCartVM.OrderHeader.Id,
+                    Price = cart.Price,
+                    Count = cart.Count
+                };
+                _unitOfWork.OrderDetail.Add(orderDetail);
+                await _unitOfWork.SaveAsync();
+            }
 
-			foreach (var item in ShoppingCartVM.ListCart)
-			{
-				var sessionLineItem = new SessionLineItemOptions
-				{
-					PriceData = new SessionLineItemPriceDataOptions
-					{
-						UnitAmount = (long)(item.Product.Price * 100),
-						Currency = "pln",
-						ProductData = new SessionLineItemPriceDataProductDataOptions
-						{
-							Name = item.Product.Title,
-						},
-					},
-					Quantity = item.Count,
-				};
-				options.LineItems.Add(sessionLineItem);
-			}
+            foreach (var item in ShoppingCartVM.ListCart)
+            {
+                var sessionLineItem = new SessionLineItemOptions
+                {
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long)(item.Product.Price * 100),
+                        Currency = "pln",
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = item.Product.Title,
+                        },
+                    },
+                    Quantity = item.Count,
+                };
+                options.LineItems.Add(sessionLineItem);
+            }
 
-			var service = new SessionService();
-			Session session = service.Create(options);
+            return options;
+        }
 
-			_unitOfWork.OrderHeader.UpdateStripePaymentID(ShoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
-			_unitOfWork.Save();
-
-			Response.Headers.Add("Location", session.Url);
-			return new StatusCodeResult(303);
-		}
-
-		public async Task<IActionResult> OrderConfirmation(int id)
+        public async Task<IActionResult> OrderConfirmation(int id)
 		{
 			OrderHeader orderHeader = _unitOfWork.OrderHeader.GetFirstOrDefault(x => x.Id == id, includeProperties: "ApplicationUser");
 
