@@ -120,8 +120,6 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 
         private async Task<SessionCreateOptions> ConfigureStripeOptions()
         {
-			SessionCreateOptions options;
-
             ShoppingCartVM.OrderHeader.PaymentStatus = AppConsts.PaymentStatusPending;
             ShoppingCartVM.OrderHeader.OrderStatus = AppConsts.StatusPending;
 
@@ -130,6 +128,20 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 
             string successUrl = Url.Action(nameof(OrderConfirmation), "Cart", new { id = ShoppingCartVM.OrderHeader.Id }, protocol: Request.Scheme, host: Request.Host.Value);
             string cancelUrl = Url.Action(nameof(Index), "Cart", null, protocol: Request.Scheme, host: Request.Host.Value);
+
+            SessionCreateOptions options = new()
+            {
+                PaymentMethodTypes = new()
+                {
+                    "card",
+					"blik",
+                    "p24"
+                },
+                LineItems = new List<SessionLineItemOptions>(),
+                Mode = "payment",
+                SuccessUrl = successUrl,
+                CancelUrl = cancelUrl,
+            };
 
             if (User.Identity.IsAuthenticated)
 			{
@@ -146,14 +158,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 					ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
 				}
 
-				options = new()
-				{
-                    LineItems = new List<SessionLineItemOptions>(),
-                    Mode = "payment",
-                    SuccessUrl = successUrl,
-                    CancelUrl = cancelUrl,
-					CustomerEmail = User.FindFirstValue(ClaimTypes.Email)
-                };
+				options.CustomerEmail = User.FindFirstValue(ClaimTypes.Email);
             }
             else
             {
@@ -167,14 +172,6 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                     cart.Price = (cart.Product.Price * cart.Count);
                     ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
                 }
-
-                options = new()
-                {
-                    LineItems = new List<SessionLineItemOptions>(),
-                    Mode = "payment",
-                    SuccessUrl = successUrl,
-                    CancelUrl = cancelUrl
-                };
             }
 
             foreach (var cart in ShoppingCartVM.ListCart)
