@@ -121,7 +121,15 @@ namespace GameStoreWeb.Areas.Customer.Controllers
         private async Task<SessionCreateOptions> ConfigureStripeOptions()
         {
 			SessionCreateOptions options;
-            var domain = $"{Request.Scheme}://{Request.Host}/";
+
+            ShoppingCartVM.OrderHeader.PaymentStatus = AppConsts.PaymentStatusPending;
+            ShoppingCartVM.OrderHeader.OrderStatus = AppConsts.StatusPending;
+
+            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
+            await _unitOfWork.SaveAsync();
+
+            string successUrl = Url.Action(nameof(OrderConfirmation), "Cart", new { id = ShoppingCartVM.OrderHeader.Id }, protocol: Request.Scheme, host: Request.Host.Value);
+            string cancelUrl = Url.Action(nameof(Index), "Cart", null, protocol: Request.Scheme, host: Request.Host.Value);
 
             if (User.Identity.IsAuthenticated)
 			{
@@ -142,8 +150,8 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				{
                     LineItems = new List<SessionLineItemOptions>(),
                     Mode = "payment",
-                    SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
-                    CancelUrl = domain + $"customer/cart/index",
+                    SuccessUrl = successUrl,
+                    CancelUrl = cancelUrl,
 					CustomerEmail = User.FindFirstValue(ClaimTypes.Email)
                 };
             }
@@ -164,16 +172,10 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                 {
                     LineItems = new List<SessionLineItemOptions>(),
                     Mode = "payment",
-                    SuccessUrl = domain + $"customer/cart/OrderConfirmation?id={ShoppingCartVM.OrderHeader.Id}",
-                    CancelUrl = domain + $"customer/cart/index"
+                    SuccessUrl = successUrl,
+                    CancelUrl = cancelUrl
                 };
             }
-
-            ShoppingCartVM.OrderHeader.PaymentStatus = AppConsts.PaymentStatusPending;
-            ShoppingCartVM.OrderHeader.OrderStatus = AppConsts.StatusPending;
-
-            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
-            await _unitOfWork.SaveAsync();
 
             foreach (var cart in ShoppingCartVM.ListCart)
             {
