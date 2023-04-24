@@ -140,12 +140,6 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 
 				ShoppingCartVM.OrderHeader.ApplicationUserId = userId;
 
-				foreach (var cart in ShoppingCartVM.ListCart)
-				{
-					cart.Price = (cart.Product.Price * cart.Count);
-					ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
-				}
-
 				options.CustomerEmail = User.FindFirstValue(ClaimTypes.Email);
             }
             else
@@ -153,12 +147,12 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                 ShoppingCartVM.ListCart = GetCookieCartProducts();
 
                 ShoppingCartVM.OrderHeader.Name = AppConsts.Guest;
+            }
 
-                foreach (var cart in ShoppingCartVM.ListCart)
-                {
-                    cart.Price = (cart.Product.Price * cart.Count);
-                    ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
-                }
+            foreach (var cart in ShoppingCartVM.ListCart)
+            {
+                cart.Price = (cart.Product.Price * cart.Count);
+                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
             }
 
             ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
@@ -168,11 +162,8 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
             await _unitOfWork.SaveAsync();
 
-            string successUrl = Url.Action(nameof(OrderConfirmation), "Cart", new { id = ShoppingCartVM.OrderHeader.Id }, protocol: Request.Scheme, host: Request.Host.Value);
-            string cancelUrl = Url.Action(nameof(Index), "Cart", null, protocol: Request.Scheme, host: Request.Host.Value);
-
-			options.SuccessUrl = successUrl;
-			options.CancelUrl = cancelUrl;
+			options.SuccessUrl = Url.Action(nameof(OrderConfirmation), "Cart", new { id = ShoppingCartVM.OrderHeader.Id }, protocol: Request.Scheme, host: Request.Host.Value);
+            options.CancelUrl = Url.Action(nameof(Index), "Cart", null, protocol: Request.Scheme, host: Request.Host.Value);
 
             foreach (var cart in ShoppingCartVM.ListCart)
             {
