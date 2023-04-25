@@ -63,19 +63,16 @@
 									</div>
 								}
 							</div>
-						<!-- IF IsDigital is selected this input is available-->
-						<div id="streetAddress">
+						<div id="shipDetails">
 								<div class="row my-1">
 									<div class="col-3">
 										<label>Street Address</label>
 									</div>
 									<div class="col-9">
 										<input asp-for="OrderHeader.StreetAddress" class="form-control" />
-
 										<span asp-validation-for="OrderHeader.StreetAddress" class="text-danger"></span>
 									</div>
 								</div>
-
 								<div class="row my-1">
 									<div class="col-3">
 										<label>Phone</label>
@@ -85,44 +82,34 @@
 										<span asp-validation-for="OrderHeader.PhoneNumber" class="text-danger"></span>
 									</div>
 								</div>
+								<div class="row my-1">
+									<div class="col-3">
+										<label>City</label>
+									</div>
+									<div class="col-9">
+										<input asp-for="OrderHeader.City" class="form-control" />
+										<span asp-validation-for="OrderHeader.City" class="text-danger"></span>
+									</div>
+								</div>
+								<div class="row my-1">
+									<div class="col-3">
+										<label>State</label>
+									</div>
+									<div class="col-9">
+										<input asp-for="OrderHeader.State" class="form-control" />
+										<span asp-validation-for="OrderHeader.State" class="text-danger"></span>
+									</div>
+								</div>
+								<div class="row my-1">
+									<div class="col-3">
+										<label>Postal Code</label>
+									</div>
+									<div class="col-9">
+										<input asp-for="OrderHeader.PostalCode" class="form-control" />
+										<span asp-validation-for="OrderHeader.PostalCode" class="text-danger"></span>
+									</div>
+								</div>
 						</div>
-
-@*							<div class="row my-1">
-								<div class="col-3">
-									<label>Street Address</label>
-								</div>
-								<div class="col-9">
-									<input asp-for="OrderHeader.StreetAddress" class="form-control" />
-									<span asp-validation-for="OrderHeader.StreetAddress" class="text-danger"></span>
-								</div>
-							</div>*@
-							<div class="row my-1">
-								<div class="col-3">
-									<label>City</label>
-								</div>
-								<div class="col-9">
-									<input asp-for="OrderHeader.City" class="form-control" />
-									<span asp-validation-for="OrderHeader.City" class="text-danger"></span>
-								</div>
-							</div>
-							<div class="row my-1">
-								<div class="col-3">
-									<label>State</label>
-								</div>
-								<div class="col-9">
-									<input asp-for="OrderHeader.State" class="form-control" />
-									<span asp-validation-for="OrderHeader.State" class="text-danger"></span>
-								</div>
-							</div>
-							<div class="row my-1">
-								<div class="col-3">
-									<label>Postal Code</label>
-								</div>
-								<div class="col-9">
-									<input asp-for="OrderHeader.PostalCode" class="form-control" />
-									<span asp-validation-for="OrderHeader.PostalCode" class="text-danger"></span>
-								</div>
-							</div>
 						</div>
 						<div class="col-12 col-lg-5 offset-lg-1">
 							<h4 class="d-flex justify-content-between align-items-center mb-3">
@@ -151,9 +138,11 @@
 			<div class="card-footer">
 				<div class="row">
 					<div class="col-12 col-md-8 pt-2">
-						<p style="color:maroon; font-size:14px;">Estimate Arrival Date: 
-							@DateTime.Now.AddDays(7).ToShortDateString() - @DateTime.Now.AddDays(14).ToShortDateString()
-						</p>
+						<div style="color:maroon; font-size:14px;">Estimate Arrival Date: 
+							<p id="shipDate">
+								@DateTime.Now.AddDays(7).ToShortDateString() - @DateTime.Now.AddDays(14).ToShortDateString()
+							</p>
+						</div>
 					</div>
 					<div class="col-12 col-md-4">
 						<button type="submit" value="Place Order" class="btn btn-primary form-control">Place Order</button>
@@ -164,62 +153,21 @@
 	</div>
 </form>
 
-<!--Working, disabling Street Address-->
-@*<script>
-	const isDigitalRadio = document.querySelector('input[name="OrderHeader.IsDigital"]');
-	const streetAddressInput = document.getElementById('streetAddress');
-
-	isDigitalRadio.addEventListener('change', function () {
-		if (this.value === 'true') {
-			streetAddressInput.style.display = 'none';
-		} else {
-			streetAddressInput.style.display = 'block';
-		}
-	});
-</script>
-
-<!-- Probably not working-->
-<script>
-	const emailRadio = document.querySelector('input[value="true"]');
-	const streetAddressInput = document.getElementById('streetAddress');
-
-	emailRadio.addEventListener('change', function () {
-		if (this.checked) {
-			streetAddressInput.disabled = true;
-		} else {
-			streetAddressInput.disabled = false;
-		}
-	});
-</script>*@
-
-<!-- Working, disabling from sending to server and displaying it-->
-@*<script>
-	const emailRadio = document.querySelector('input[name="OrderHeader.IsDigital"]');
-	const streetAddressInput = document.getElementById('streetAddress');
-
-	emailRadio.addEventListener('change', function () {
-		if (this.checked) {
-			streetAddressInput.disabled = true;
-			streetAddressInput.style.display = 'none';
-		} else {
-			streetAddressInput.disabled = false;
-			streetAddressInput.style.display = 'block';
-		}
-	});
-</script>*@
-
 <script>
 	const emailRadio = document.querySelector('input[value="true"][name="OrderHeader.IsDigital"]');
 	const shipRadio = document.querySelector('input[value="false"][name="OrderHeader.IsDigital"]');
-	const streetAddressInput = document.getElementById('streetAddress'); // shipDetails
+	const streetAddressInput = document.getElementById('shipDetails');
+	const shipDate = document.getElementById('shipDate');
 
 	function updateStreetAddressInput() {
 		if (shipRadio.checked) {
 			streetAddressInput.disabled = false;
 			streetAddressInput.style.display = 'block';
+			shipDate.innerText = "Ship";
 		} else {
 			streetAddressInput.disabled = true;
 			streetAddressInput.style.display = 'none';
+			shipDate.innerText = "Digital";
 		}
 	}
 
@@ -228,18 +176,3 @@
 	emailRadio.addEventListener('change', updateStreetAddressInput);
 	shipRadio.addEventListener('change', updateStreetAddressInput);
 </script>
-
-
-@*<script>
-	const shipRadio = document.querySelector('input[value="false"]');
-	const streetAddressInput = document.getElementById('streetAddress');
-
-	shipRadio.addEventListener('change', function () {
-		if (this.checked) {
-			streetAddressInput.style.display = 'block';
-		} else {
-			streetAddressInput.style.display = 'none';
-		}
-	});
-</script>*@
-
