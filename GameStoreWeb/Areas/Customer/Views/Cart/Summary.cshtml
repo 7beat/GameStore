@@ -158,18 +158,19 @@
     <script>
         const emailRadio = $('input[value="true"][name="OrderHeader.IsDigital"]');
         const shipRadio = $('input[value="false"][name="OrderHeader.IsDigital"]');
-        const streetAddressInput = $('#shipDetails');
+        const shipDetails = $('#shipDetails');
         const shipDate = $('#shipDate');
         const shipDateText = shipDate.html();
+        const inputs = $('#shipDetails input');
 
         function updateStreetAddressInput() {
             if (shipRadio.is(':checked')) {
-                streetAddressInput.prop('disabled', false);
-                streetAddressInput.show();
+                inputs.prop('disabled', false);
+                shipDetails.show();
                 shipDate.text(shipDateText);
             } else {
-                streetAddressInput.prop('disabled', true);
-                streetAddressInput.hide();
+                inputs.prop('disabled', true);
+                shipDetails.hide();
                 shipDate.text('Now');
             }
         }
