@@ -63,6 +63,20 @@
 									</div>
 								}
 							</div>
+						<!-- IF IsDigital is selected this input is available-->
+							<div class="row my-1" id="streetAddress">
+								<div class="col-3">
+									<label>Street Address</label>
+								</div>
+								<div class="col-9">
+@*									<input asp-for="OrderHeader.StreetAddress" class="form-control" />*@
+									<input asp-for="OrderHeader.StreetAddress" class="form-control" />
+
+									<span asp-validation-for="OrderHeader.StreetAddress" class="text-danger"></span>
+								</div>
+							</div>
+
+
 							<div class="row my-1">
 								<div class="col-3">
 									<label>Phone</label>
@@ -72,7 +86,7 @@
 									<span asp-validation-for="OrderHeader.PhoneNumber" class="text-danger"></span>
 								</div>
 							</div>
-							<div class="row my-1">
+@*							<div class="row my-1">
 								<div class="col-3">
 									<label>Street Address</label>
 								</div>
@@ -80,7 +94,7 @@
 									<input asp-for="OrderHeader.StreetAddress" class="form-control" />
 									<span asp-validation-for="OrderHeader.StreetAddress" class="text-danger"></span>
 								</div>
-							</div>
+							</div>*@
 							<div class="row my-1">
 								<div class="col-3">
 									<label>City</label>
@@ -125,7 +139,7 @@
 								</li>
 								}
 								<li class="list-group-item d-flex justify-content-between bg-light">
-									<small class="text-info">Total (USD)</small>								<!-- To display $Price instead of Price zł cuz ToString() is culture based -->
+									<small class="text-info">Total (USD)</small>
 									<strong class="text-info">@Model.OrderHeader.OrderTotal.ToString("c")</strong>
 								</li>
 							</ul>
@@ -148,3 +162,83 @@
 		</div>
 	</div>
 </form>
+
+<!--Working, disabling Street Address-->
+@*<script>
+	const isDigitalRadio = document.querySelector('input[name="OrderHeader.IsDigital"]');
+	const streetAddressInput = document.getElementById('streetAddress');
+
+	isDigitalRadio.addEventListener('change', function () {
+		if (this.value === 'true') {
+			streetAddressInput.style.display = 'none';
+		} else {
+			streetAddressInput.style.display = 'block';
+		}
+	});
+</script>
+
+<!-- Probably not working-->
+<script>
+	const emailRadio = document.querySelector('input[value="true"]');
+	const streetAddressInput = document.getElementById('streetAddress');
+
+	emailRadio.addEventListener('change', function () {
+		if (this.checked) {
+			streetAddressInput.disabled = true;
+		} else {
+			streetAddressInput.disabled = false;
+		}
+	});
+</script>*@
+
+<!-- Working, disabling from sending to server and displaying it-->
+@*<script>
+	const emailRadio = document.querySelector('input[name="OrderHeader.IsDigital"]');
+	const streetAddressInput = document.getElementById('streetAddress');
+
+	emailRadio.addEventListener('change', function () {
+		if (this.checked) {
+			streetAddressInput.disabled = true;
+			streetAddressInput.style.display = 'none';
+		} else {
+			streetAddressInput.disabled = false;
+			streetAddressInput.style.display = 'block';
+		}
+	});
+</script>*@
+
+<script>
+	const emailRadio = document.querySelector('input[value="true"][name="OrderHeader.IsDigital"]');
+	const shipRadio = document.querySelector('input[value="false"][name="OrderHeader.IsDigital"]');
+	const streetAddressInput = document.getElementById('streetAddress'); // shipDetails
+
+	function updateStreetAddressInput() {
+		if (shipRadio.checked) {
+			streetAddressInput.disabled = false;
+			streetAddressInput.style.display = 'block';
+		} else {
+			streetAddressInput.disabled = true;
+			streetAddressInput.style.display = 'none';
+		}
+	}
+
+	updateStreetAddressInput();
+
+	emailRadio.addEventListener('change', updateStreetAddressInput);
+	shipRadio.addEventListener('change', updateStreetAddressInput);
+</script>
+
+
+@*<script>
+	const shipRadio = document.querySelector('input[value="false"]');
+	const streetAddressInput = document.getElementById('streetAddress');
+
+	shipRadio.addEventListener('change', function () {
+		if (this.checked) {
+			streetAddressInput.style.display = 'block';
+		} else {
+			streetAddressInput.style.display = 'none';
+		}
+	});
+</script>*@
+
