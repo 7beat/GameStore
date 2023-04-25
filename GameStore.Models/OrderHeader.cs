@@ -42,6 +42,6 @@ namespace GameStore.Models
 		[Required]
 		public string? Name { get; set; }
 
-        public bool IsDigital { get; set; }
+		public bool IsDigital { get; set; } = true;
     }
 }
