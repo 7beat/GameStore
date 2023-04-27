@@ -12,8 +12,12 @@ namespace GameStoreWeb.Data
         {
         }
 
-		// Products
-		public DbSet<Platform> Platforms { get; set; }
+        public ApplicationDbContext()
+        {
+        }
+
+        // Products
+        public DbSet<Platform> Platforms { get; set; }
 		public DbSet<Genre> Genres { get; set; }
 		public DbSet<Product> Products { get; set; }
 
