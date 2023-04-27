@@ -1,41 +1,45 @@
-﻿using GameStore.DataAccess.Repository;
+﻿using GameStore.DataAccess.Migrations;
+using GameStore.DataAccess.Repository;
 using GameStore.DataAccess.Repository.IRepository;
 using GameStore.Models;
 using GameStoreWeb.Data;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
+using System.Linq.Expressions;
 
 namespace GameStore.UnitTests
 {
     public class RepositoryTests
     {
+        private ApplicationDbContext _dbContext;
+        private Repository<Platform> _repository;
 
         [SetUp]
         public void Setup()
         {
-
-        }
-
-        [Test]
-        public void Add_Should_Add_Entity_To_DbSet()
-        {
-            // Arrange
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: "TestDatabase")
                 .Options;
-            var context = new ApplicationDbContext(options);
-            var repository = new Repository<Platform>(context);
 
+            _dbContext = new ApplicationDbContext(options);
+            _repository = new Repository<Platform>(_dbContext);
+        }
+
+        [Test]
+        public void Add_Entity_ShouldBeAddedToDatabase()
+        {
+            // Arrange
             var entity = new Platform { Id = 1, Name = "Platform" };
 
             // Act
-            repository.Add(entity);
+            _repository.Add(entity);
+            _dbContext.SaveChanges();
 
             // Assert
-            var addedEntity = context.Set<Platform>().Find(entity.Id);
-            Assert.IsNotNull(addedEntity);
-            Assert.AreEqual(entity, addedEntity);
+            var savedEntity = _dbContext.Set<Platform>().SingleOrDefault(e => e.Id == entity.Id);
+            Assert.That(savedEntity, Is.Not.Null);
+            Assert.That(savedEntity.Name, Is.EqualTo(entity.Name));
         }
 
         [Test]
@@ -74,28 +78,11 @@ namespace GameStore.UnitTests
             Assert.IsTrue(result.Any(e => e.Id == 3));
         }
 
-        //[Test]
-        //public void Add_ShouldAddEntityToDatabase()
-        //{
-        //    var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-        //    .UseInMemoryDatabase(databaseName: "TestDatabase")
-        //    .Options;
-        //    var context = new ApplicationDbContext(options);
-        //    // Arrange
-        //    var mockUnitOfWork = new Mock<IUnitOfWork>();
-        //    var repository = new Repository<Platform>(context);
-        //    var entity = new Platform { Id = 1, Name = "Platform1" };
+        [TearDown]
+        public void TestCleanup()
+        {
+            _dbContext.Dispose();
+        }
 
-        //    mockUnitOfWork.Setup(uow => uow.Save()).Verifiable();
-
-        //    // Act
-        //    //repository.Add(entity);
-        //    repository.Add(entity);
-
-        //    // Assert
-        //    mockUnitOfWork.Verify(uow => uow.Save(), Times.Once);
-        //    var addedEntity = repository.GetFirstOrDefault(x => x.Id == entity.Id);
-        //    Assert.AreEqual(entity, addedEntity);
-        //}
     }
 }
