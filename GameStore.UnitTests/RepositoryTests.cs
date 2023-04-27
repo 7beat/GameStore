@@ -13,6 +13,7 @@ namespace GameStore.UnitTests
     public class RepositoryTests
     {
         private ApplicationDbContext _dbContext;
+        private Mock<ApplicationDbContext> _mockDbContext;
         private Repository<Platform> _repository;
 
         [SetUp]
@@ -23,6 +24,7 @@ namespace GameStore.UnitTests
                 .Options;
 
             _dbContext = new ApplicationDbContext(options);
+            _mockDbContext = new Mock<ApplicationDbContext>(options);
             _repository = new Repository<Platform>(_dbContext);
         }
 
@@ -59,17 +61,12 @@ namespace GameStore.UnitTests
             mockDbSet.As<IQueryable<Platform>>().Setup(m => m.ElementType).Returns(testData.ElementType);
             mockDbSet.As<IQueryable<Platform>>().Setup(m => m.GetEnumerator()).Returns(testData.GetEnumerator());
 
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: "TestDatabase")
-            .Options;
-            var mockDbContext = new Mock<ApplicationDbContext>(options);
+            _mockDbContext.Setup(c => c.Set<Platform>()).Returns(mockDbSet.Object);
 
-            mockDbContext.Setup(c => c.Set<Platform>()).Returns(mockDbSet.Object);
-
-            var repository = new Repository<Platform>(mockDbContext.Object);
+            _repository = new Repository<Platform>(_mockDbContext.Object);
 
             // Act
-            var result = repository.GetAll();
+            var result = _repository.GetAll();
 
             // Assert
             Assert.AreEqual(3, result.Count());
