@@ -1,6 +1,6 @@
 ﻿using GameStore.DataAccess.Repository;
+using GameStore.DataAccess.Repository.IRepository;
 using GameStoreWeb.Data;
-using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
 
@@ -8,17 +8,13 @@ namespace GameStore.UnitTests
 {
     public class UnitOfWorkTests
     {
-        private DbContextOptions<ApplicationDbContext> _options;
         private Mock<ApplicationDbContext> _mockDbContext;
-        private UnitOfWork _unitOfWork;
+        private IUnitOfWork _unitOfWork;
 
         [SetUp]
         public void Setup()
         {
-            _options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            _mockDbContext = new Mock<ApplicationDbContext>(_options);
+            _mockDbContext = new Mock<ApplicationDbContext>();
             _unitOfWork = new UnitOfWork(_mockDbContext.Object);
         }
 
