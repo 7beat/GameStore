@@ -8,38 +8,38 @@ namespace GameStore.UnitTests
 {
     public class UnitOfWorkTests
     {
+        private DbContextOptions<ApplicationDbContext> _options;
+        private Mock<ApplicationDbContext> _mockDbContext;
+        private UnitOfWork _unitOfWork;
+
+        [SetUp]
+        public void Setup()
+        {
+            _options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
+            _mockDbContext = new Mock<ApplicationDbContext>(_options);
+            _unitOfWork = new UnitOfWork(_mockDbContext.Object);
+        }
+
         [Test]
         public void Save_Should_Call_SaveChanges_Method()
         {
-            // Arrange
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var mockDbContext = new Mock<ApplicationDbContext>(options);
-            var unitOfWork = new UnitOfWork(mockDbContext.Object);
-
             // Act
-            unitOfWork.Save();
+            _unitOfWork.Save();
 
             // Assert
-            mockDbContext.Verify(m => m.SaveChanges(), Times.Once);
+            _mockDbContext.Verify(m => m.SaveChanges(), Times.Once);
         }
 
         [Test]
         public async Task SaveAsync_Should_Call_SaveChangesAsync_Method()
         {
-            // Arrange
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDatabase")
-                .Options;
-            var mockDbContext = new Mock<ApplicationDbContext>(options);
-            var unitOfWork = new UnitOfWork(mockDbContext.Object);
-
             // Act
-            await unitOfWork.SaveAsync();
+            await _unitOfWork.SaveAsync();
 
             // Assert
-            mockDbContext.Verify(m => m.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+            _mockDbContext.Verify(m => m.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }
