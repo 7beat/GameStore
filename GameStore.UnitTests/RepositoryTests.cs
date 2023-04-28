@@ -1,12 +1,9 @@
-﻿using GameStore.DataAccess.Migrations;
-using GameStore.DataAccess.Repository;
-using GameStore.DataAccess.Repository.IRepository;
+﻿using GameStore.DataAccess.Repository;
 using GameStore.Models;
 using GameStoreWeb.Data;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
-using System.Linq.Expressions;
 
 namespace GameStore.UnitTests
 {
@@ -42,6 +39,23 @@ namespace GameStore.UnitTests
             var savedEntity = _dbContext.Set<Platform>().SingleOrDefault(e => e.Id == entity.Id);
             Assert.That(savedEntity, Is.Not.Null);
             Assert.That(savedEntity.Name, Is.EqualTo(entity.Name));
+        }
+
+        [Test]
+        public void Delete_Entity_ShouldBeRemovedFromDatabase()
+        {
+            // Arrange
+            var entity = new Platform { Id = 1, Name = "Platform" };
+            _repository.Add(entity);
+            _dbContext.SaveChanges();
+
+            // Act
+            _repository.Remove(entity);
+            _dbContext.SaveChanges();
+
+            // Assert
+            var deletedEntity = _dbContext.Set<Platform>().SingleOrDefault(e => e.Id == entity.Id);
+            Assert.That(deletedEntity, Is.Null);
         }
 
         [Test]
