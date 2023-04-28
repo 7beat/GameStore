@@ -155,6 +155,9 @@
 </form>
 
 @section Scripts{
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
     <script>
         const emailRadio = $('input[value="true"][name="OrderHeader.IsDigital"]');
         const shipRadio = $('input[value="false"][name="OrderHeader.IsDigital"]');
