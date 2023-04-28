@@ -59,7 +59,27 @@ namespace GameStore.UnitTests
         }
 
         [Test]
-        public void GetAll_ShouldReturnAllEntities_WhenCalled()
+        public async Task GetFirstOrDefault_Entity_ShouldReturnSelectedEntity()
+        {
+            // Arrange
+            var expectedEntity = new Platform { Id = 1, Name = "Platform" };
+            _repository.Add(expectedEntity);
+            _dbContext.SaveChanges();
+
+            // Act 
+            _repository.GetFirstOrDefault(x => x.Id == 1);
+
+            // Assert
+            var entity = _dbContext.Set<Platform>().SingleOrDefault(e => e.Id == expectedEntity.Id);
+
+            Assert.IsNotNull(entity);
+            Assert.AreEqual(expectedEntity.Id, entity.Id);
+            Assert.AreEqual(expectedEntity.Name, entity.Name);
+        }
+
+
+        [Test]
+        public void GetAll_Entities_ShouldReturnAllEntities()
         {
             // Arrange
             var testData = new List<Platform>
