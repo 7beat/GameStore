@@ -11,6 +11,7 @@ The GameStore Web Application is a simple e-commerce platform that allows users 
 * Order management for tracking and managing user orders
 * Custom theme support for easy customization of the application's appearance
 * Users seeding with assigned roles for quick setup and role-based access control
+* Unit Tests to ensure that critical features function as intended
 
 ## Technologies Used
 * Front-end: HTML, CSS, JavaScript
