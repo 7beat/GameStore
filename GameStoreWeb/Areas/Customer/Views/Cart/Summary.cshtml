@@ -79,7 +79,15 @@
                                         <label>Phone</label>
                                     </div>
                                     <div class="col-9">
-                                        <input asp-for="OrderHeader.PhoneNumber" class="form-control" />
+                                        <div class="input-group">
+                                            <div class="input-group-prepend col-auto p-0">
+                                                <select class="form-control" name="phoneCode"> @*<select asp-for="OrderHeader.CountryCode" class="form-control">*@
+                                                    <option value="+48">+48 (PL)</option>
+                                                    <!-- Add more options here -->
+                                                </select>
+                                            </div>
+                                            <input type="text" asp-for="OrderHeader.PhoneNumber" class="form-control flex-grow-1 rounded-end" />
+                                        </div>
                                         <span asp-validation-for="OrderHeader.PhoneNumber" class="text-danger"></span>
                                     </div>
                                 </div>
