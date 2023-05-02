@@ -2,47 +2,61 @@
 using BookStore.DataAccess.Repository.IRepository;
 using GameStore.DataAccess.Repository.IRepository;
 using GameStoreWeb.Data;
-using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GameStore.DataAccess.Repository
 {
     public class UnitOfWork : IUnitOfWork
     {
-        public IPlatformRepository Platform { get; private set; }
-        public IGenreRepository Genre { get; private set; }
-        public IProductRepository Product { get; private set; }
-		public IShoppingCartRepository ShoppingCart { get; private set; }
-		public IApplicationUserRepository ApplicationUser { get; private set; }
-		public IOrderHeaderRepository OrderHeader { get; private set; }
-		public IOrderDetailRepository OrderDetail { get; private set; }
+        private bool _disposed = false;
+        private readonly ApplicationDbContext _dbContext;
 
-		private ApplicationDbContext _db;
+        private IPlatformRepository? _platformRepository;
+        private IGenreRepository? _genreRepository;
+        private IProductRepository? _productRepository;
+        private IShoppingCartRepository? _shoppingCartRepository;
+        private IApplicationUserRepository? _applicationUserRepository;
+        private IOrderHeaderRepository? _orderHeaderRepository;
+        private IOrderDetailRepository? _orderDetailRepository;
 
-        public UnitOfWork(ApplicationDbContext db)
+        public IPlatformRepository Platform => _platformRepository ??= new PlatformRepository(_dbContext);
+        public IGenreRepository Genre => _genreRepository ??= new GenreRepository(_dbContext);
+        public IProductRepository Product => _productRepository ??= new ProductRepository(_dbContext);
+        public IShoppingCartRepository ShoppingCart => _shoppingCartRepository ??= new ShoppingCartRepository(_dbContext);
+        public IApplicationUserRepository ApplicationUser => _applicationUserRepository ??= new ApplicationUserRepository(_dbContext);
+        public IOrderHeaderRepository OrderHeader => _orderHeaderRepository ??= new OrderHeaderRepository(_dbContext);
+        public IOrderDetailRepository OrderDetail => _orderDetailRepository ??= new OrderDetailRepository(_dbContext);
+
+        public UnitOfWork(ApplicationDbContext dbContext)
         {
-            _db = db;
-            Platform = new PlatformRepository(_db);
-            Genre = new GenreRepository(_db);
-            Product = new ProductRepository(_db);
-			ApplicationUser = new ApplicationUserRepository(_db);
-			ShoppingCart = new ShoppingCartRepository(_db);
-			OrderHeader = new OrderHeaderRepository(_db);
-			OrderDetail = new OrderDetailRepository(_db);
-		}
+            _dbContext = dbContext;
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    _dbContext.Dispose();
+                }
+            }
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
         public void Save()
         {
-            _db.SaveChanges(); 
+            _dbContext.SaveChanges();
         }
 
         public async Task SaveAsync()
         {
-            await _db.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
         }
     }
 }
