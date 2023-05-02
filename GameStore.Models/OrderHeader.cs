@@ -12,7 +12,6 @@ namespace GameStore.Models
 		[ForeignKey("ApplicationUserId")]
 		[ValidateNever]
 		public ApplicationUser? ApplicationUser { get; set; }
-		[EmailAddress]
 		public string? GuestEmailAddress { get; set; }
 
 		[Required]
@@ -29,19 +28,13 @@ namespace GameStore.Models
 		public string? SessionId { get; set; }
 		public string? PaymentIntentId { get; set; }
 
-		[Required]
 		public string? PhoneNumber { get; set; }
-		[Required]
 		public string? StreetAddress { get; set; }
-		[Required]
 		public string? City { get; set; }
-		[Required]
 		public string? State { get; set; }
-		[Required]
 		public string? PostalCode { get; set; }
-		[Required]
 		public string? Name { get; set; }
 
-		public bool IsDigital { get; set; } = true;
+		public bool IsDigital { get; set; }
     }
 }
