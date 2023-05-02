@@ -49,8 +49,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				ShoppingCartVM = new()
 				{
 					ListCart = GetCookieCartProducts(),
-					OrderHeader = new(),
-					OrderHeaderInput = new()
+					OrderHeader = new()
 				};
 				foreach (var cart in ShoppingCartVM.ListCart)
 				{
@@ -70,32 +69,20 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				{
 					ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == userId, "Product", "ApplicationUser"),
 					OrderHeader = new(),
-					OrderHeaderInput = new()
 				};
 
-				ShoppingCartVM.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser.GetFirstOrDefault(x => x.Id == userId);
+				var userData = _unitOfWork.ApplicationUser.GetFirstOrDefault(x => x.Id == userId);
 
-				// Jeśli bym używał tylko Dtosa to wtedy bym misał pobrać usera jako variable i dopisać do inputa jego dane eg var user = _unitOfWork.ApplicationUser.GetFirstOrDefault(x => x.Id == userId);
-
-				//ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.OrderHeader.ApplicationUser.UserName;
-				//ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
-				//ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
-				//ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeader.ApplicationUser.City;
-				//ShoppingCartVM.OrderHeader.State = ShoppingCartVM.OrderHeader.ApplicationUser.State;
-				//ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.PostalCode;
-
-				// TODO: AutoMapper
-				ShoppingCartVM.OrderHeaderInput.Name = ShoppingCartVM.OrderHeader.ApplicationUser.UserName;
-				ShoppingCartVM.OrderHeaderInput.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
-				ShoppingCartVM.OrderHeaderInput.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
-				ShoppingCartVM.OrderHeaderInput.City = ShoppingCartVM.OrderHeader.ApplicationUser.City;
-				ShoppingCartVM.OrderHeaderInput.State = ShoppingCartVM.OrderHeader.ApplicationUser.State;
-				ShoppingCartVM.OrderHeaderInput.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.PostalCode;
+				ShoppingCartVM.OrderHeader.Name = userData.UserName;
+				ShoppingCartVM.OrderHeader.PhoneNumber = userData.PhoneNumber;
+				ShoppingCartVM.OrderHeader.StreetAddress = userData.StreetAddress;
+				ShoppingCartVM.OrderHeader.City = userData.City;
+				ShoppingCartVM.OrderHeader.State = userData.State;
+				ShoppingCartVM.OrderHeader.PostalCode = userData.PostalCode;
 
 				foreach (var cart in ShoppingCartVM.ListCart)
 				{
 					ShoppingCartVM.OrderHeader.OrderTotal += (cart.Product.Price * cart.Count);
-					//ShoppingCartVM.OrderHeaderInput.OrderTotal += (cart.Product.Price * cart.Count);
 				}
 			}
 			else
@@ -103,8 +90,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				ShoppingCartVM = new()
 				{
 					ListCart = GetCookieCartProducts(),
-					//OrderHeader = new(),
-                    OrderHeaderInput = new()
+					OrderHeader = new(),
                 };
 				foreach (var cart in ShoppingCartVM.ListCart)
 				{
@@ -120,117 +106,16 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> SummaryPost()
         {
-            SessionCreateOptions options = await ConfigureStripeOptions();
+            var result = await ConfigureStripeOptions();
 
             var service = new SessionService();
-            Session session = service.Create(options);
+            Session session = service.Create(result.Options);
 
-			// Jeśli options nie byłby w metodzie to mógłbym var orderHeaderDoamin normalnie aktualizować tutaj
-            _unitOfWork.OrderHeader.UpdateStripePaymentID(ShoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
+            _unitOfWork.OrderHeader.UpdateStripePaymentID(result.OrderHeaderId, session.Id, session.PaymentIntentId);
             _unitOfWork.Save();
 
             Response.Headers.Add("Location", session.Url);
             return new StatusCodeResult(303);
-        }
-
-        private async Task<SessionCreateOptions> ConfigureStripeOptions() // Task<ConfigureStripeResult> with newly created OrderHeader and options
-        {
-            SessionCreateOptions options = new()
-            {
-                PaymentMethodTypes = new()
-                {
-                    "card",
-					"blik",
-                    "p24"
-                },
-                LineItems = new List<SessionLineItemOptions>(),
-                Mode = "payment"
-            };
-
-			ShoppingCartVM.OrderHeader = new(); // Jesli bym uzywał Dtosa to bym tu tworzył po prostu var orderHeaderDomain i jego dodał do bazy
-
-            if (User.Identity.IsAuthenticated)
-			{
-				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-				ShoppingCartVM.ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == userId, "Product");
-
-				// Muszę stowrzyć tutaj Domain Model a wcześniej tylko input starczy bo nie inicjalizuje tego og
-
-				ShoppingCartVM.OrderHeader.ApplicationUserId = userId;
-
-				options.CustomerEmail = User.FindFirstValue(ClaimTypes.Email);
-            }
-            else
-            {
-                ShoppingCartVM.ListCart = GetCookieCartProducts();
-
-				var test = ShoppingCartVM.OrderHeader.OrderTotal;
-
-                ShoppingCartVM.OrderHeader.Name = AppConsts.Guest;
-
-				options.CustomerEmail = ShoppingCartVM.OrderHeader.GuestEmailAddress;
-            }
-
-            foreach (var cart in ShoppingCartVM.ListCart)
-            {
-                cart.Price = (cart.Product.Price * cart.Count);
-                ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
-            }
-
-            ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now; // orderHeaderDomain
-            ShoppingCartVM.OrderHeader.PaymentStatus = AppConsts.PaymentStatusPending;
-            ShoppingCartVM.OrderHeader.OrderStatus = AppConsts.StatusPending;
-
-			if (ShoppingCartVM.OrderHeaderInput is not null)
-			{
-				ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.OrderHeaderInput.Name;
-				ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeaderInput.PhoneNumber;
-				ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeaderInput.StreetAddress;
-				ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeaderInput.City;
-				ShoppingCartVM.OrderHeader.State = ShoppingCartVM.OrderHeaderInput.State;
-				ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeaderInput.PostalCode;
-
-			}
-
-            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader); // orderHeaderDomain
-            await _unitOfWork.SaveAsync();
-
-			options.SuccessUrl = Url.Action(nameof(OrderConfirmation), "Cart", new { id = ShoppingCartVM.OrderHeader.Id }, protocol: Request.Scheme, host: Request.Host.Value);
-            options.CancelUrl = Url.Action(nameof(Index), "Cart", null, protocol: Request.Scheme, host: Request.Host.Value);
-
-            foreach (var cart in ShoppingCartVM.ListCart)
-            {
-                OrderDetail orderDetail = new()
-                {
-                    ProductId = cart.ProductId,
-                    OrderId = ShoppingCartVM.OrderHeader.Id,
-                    Price = cart.Price,
-                    Count = cart.Count
-                };
-                _unitOfWork.OrderDetail.Add(orderDetail);
-                await _unitOfWork.SaveAsync();
-            }
-
-            foreach (var item in ShoppingCartVM.ListCart)
-            {
-                var sessionLineItem = new SessionLineItemOptions
-                {
-                    PriceData = new SessionLineItemPriceDataOptions
-                    {
-                        UnitAmount = (long)(item.Product.Price * 100),
-                        Currency = "pln",
-                        ProductData = new SessionLineItemPriceDataProductDataOptions
-                        {
-                            Name = item.Product.Title,
-                        },
-                    },
-                    Quantity = item.Count,
-                };
-                options.LineItems.Add(sessionLineItem);
-            }
-
-            return options;
         }
 
         public async Task<IActionResult> OrderConfirmation(int id)
@@ -368,11 +253,110 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 						<ul>{productKeys}</ul>");
 		}
 
+        private async Task<ConfigureStripeResult> ConfigureStripeOptions()
+        {
+            SessionCreateOptions options = new()
+            {
+                PaymentMethodTypes = new()
+                {
+                    "card",
+                    "blik",
+                    "p24"
+                },
+                LineItems = new List<SessionLineItemOptions>(),
+                Mode = "payment"
+            };
+
+            OrderHeader orderHeaderDoamin = new();
+            var result = new ConfigureStripeResult();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                ShoppingCartVM.ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == userId, "Product");
+
+                orderHeaderDoamin.Name = ShoppingCartVM.OrderHeader.Name;
+                orderHeaderDoamin.ApplicationUserId = userId;
+
+                options.CustomerEmail = User.FindFirstValue(ClaimTypes.Email);
+            }
+            else
+            {
+                ShoppingCartVM.ListCart = GetCookieCartProducts();
+
+                orderHeaderDoamin.Name = AppConsts.Guest;
+
+                options.CustomerEmail = ShoppingCartVM.OrderHeader.GuestEmailAddress;
+                orderHeaderDoamin.GuestEmailAddress = ShoppingCartVM.OrderHeader.GuestEmailAddress;
+            }
+
+            foreach (var cart in ShoppingCartVM.ListCart)
+            {
+                cart.Price = (cart.Product.Price * cart.Count);
+                orderHeaderDoamin.OrderTotal += (cart.Price * cart.Count);
+            }
+
+            orderHeaderDoamin.OrderDate = DateTime.Now;
+            orderHeaderDoamin.PaymentStatus = AppConsts.PaymentStatusPending;
+            orderHeaderDoamin.OrderStatus = AppConsts.StatusPending;
+            orderHeaderDoamin.IsDigital = ShoppingCartVM.OrderHeader.IsDigital;
+
+            if (!ShoppingCartVM.OrderHeader.IsDigital)
+            {
+                orderHeaderDoamin.PhoneNumber = ShoppingCartVM.OrderHeader.PhoneNumber;
+                orderHeaderDoamin.StreetAddress = ShoppingCartVM.OrderHeader.StreetAddress;
+                orderHeaderDoamin.City = ShoppingCartVM.OrderHeader.City;
+                orderHeaderDoamin.State = ShoppingCartVM.OrderHeader.State;
+                orderHeaderDoamin.PostalCode = ShoppingCartVM.OrderHeader.PostalCode;
+            }
+
+            _unitOfWork.OrderHeader.Add(orderHeaderDoamin);
+            await _unitOfWork.SaveAsync();
+
+            options.SuccessUrl = Url.Action(nameof(OrderConfirmation), "Cart", new { id = orderHeaderDoamin.Id }, protocol: Request.Scheme, host: Request.Host.Value);
+            options.CancelUrl = Url.Action(nameof(Index), "Cart", null, protocol: Request.Scheme, host: Request.Host.Value);
+
+            foreach (var cart in ShoppingCartVM.ListCart)
+            {
+                OrderDetail orderDetail = new()
+                {
+                    ProductId = cart.ProductId,
+                    OrderId = orderHeaderDoamin.Id,
+                    Price = cart.Price,
+                    Count = cart.Count
+                };
+                _unitOfWork.OrderDetail.Add(orderDetail);
+                await _unitOfWork.SaveAsync();
+            }
+
+            foreach (var item in ShoppingCartVM.ListCart)
+            {
+                var sessionLineItem = new SessionLineItemOptions
+                {
+                    PriceData = new SessionLineItemPriceDataOptions
+                    {
+                        UnitAmount = (long)(item.Product.Price * 100),
+                        Currency = "pln",
+                        ProductData = new SessionLineItemPriceDataProductDataOptions
+                        {
+                            Name = item.Product.Title,
+                        },
+                    },
+                    Quantity = item.Count,
+                };
+                options.LineItems.Add(sessionLineItem);
+            }
+
+            result.Options = options;
+            result.OrderHeaderId = orderHeaderDoamin.Id;
+
+            return result;
+        }
+
         public class ConfigureStripeResult
         {
             public SessionCreateOptions Options { get; set; }
-
-			// Id of newly created OrderHeader
             public int OrderHeaderId { get; set; }
         }
     }
