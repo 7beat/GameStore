@@ -49,7 +49,8 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				ShoppingCartVM = new()
 				{
 					ListCart = GetCookieCartProducts(),
-					OrderHeader = new()
+					OrderHeader = new(),
+					OrderHeaderInput = new()
 				};
 				foreach (var cart in ShoppingCartVM.ListCart)
 				{
@@ -68,21 +69,33 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				ShoppingCartVM = new ShoppingCartVM()
 				{
 					ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == userId, "Product", "ApplicationUser"),
-					OrderHeader = new()
+					OrderHeader = new(),
+					OrderHeaderInput = new()
 				};
 
 				ShoppingCartVM.OrderHeader.ApplicationUser = _unitOfWork.ApplicationUser.GetFirstOrDefault(x => x.Id == userId);
 
-				ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.OrderHeader.ApplicationUser.UserName;
-				ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
-				ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
-				ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeader.ApplicationUser.City;
-				ShoppingCartVM.OrderHeader.State = ShoppingCartVM.OrderHeader.ApplicationUser.State;
-				ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.PostalCode;
+				// Jeśli bym używał tylko Dtosa to wtedy bym misał pobrać usera jako variable i dopisać do inputa jego dane eg var user = _unitOfWork.ApplicationUser.GetFirstOrDefault(x => x.Id == userId);
+
+				//ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.OrderHeader.ApplicationUser.UserName;
+				//ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
+				//ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
+				//ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeader.ApplicationUser.City;
+				//ShoppingCartVM.OrderHeader.State = ShoppingCartVM.OrderHeader.ApplicationUser.State;
+				//ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.PostalCode;
+
+				// TODO: AutoMapper
+				ShoppingCartVM.OrderHeaderInput.Name = ShoppingCartVM.OrderHeader.ApplicationUser.UserName;
+				ShoppingCartVM.OrderHeaderInput.PhoneNumber = ShoppingCartVM.OrderHeader.ApplicationUser.PhoneNumber;
+				ShoppingCartVM.OrderHeaderInput.StreetAddress = ShoppingCartVM.OrderHeader.ApplicationUser.StreetAddress;
+				ShoppingCartVM.OrderHeaderInput.City = ShoppingCartVM.OrderHeader.ApplicationUser.City;
+				ShoppingCartVM.OrderHeaderInput.State = ShoppingCartVM.OrderHeader.ApplicationUser.State;
+				ShoppingCartVM.OrderHeaderInput.PostalCode = ShoppingCartVM.OrderHeader.ApplicationUser.PostalCode;
 
 				foreach (var cart in ShoppingCartVM.ListCart)
 				{
 					ShoppingCartVM.OrderHeader.OrderTotal += (cart.Product.Price * cart.Count);
+					//ShoppingCartVM.OrderHeaderInput.OrderTotal += (cart.Product.Price * cart.Count);
 				}
 			}
 			else
@@ -90,12 +103,13 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 				ShoppingCartVM = new()
 				{
 					ListCart = GetCookieCartProducts(),
-					OrderHeader = new()
-				};
+					//OrderHeader = new(),
+                    OrderHeaderInput = new()
+                };
 				foreach (var cart in ShoppingCartVM.ListCart)
 				{
 					ShoppingCartVM.OrderHeader.OrderTotal += (cart.Product.Price * cart.Count);
-				}
+                }
 			}
 
 			return View(ShoppingCartVM);
@@ -111,6 +125,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             var service = new SessionService();
             Session session = service.Create(options);
 
+			// Jeśli options nie byłby w metodzie to mógłbym var orderHeaderDoamin normalnie aktualizować tutaj
             _unitOfWork.OrderHeader.UpdateStripePaymentID(ShoppingCartVM.OrderHeader.Id, session.Id, session.PaymentIntentId);
             _unitOfWork.Save();
 
@@ -118,7 +133,7 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             return new StatusCodeResult(303);
         }
 
-        private async Task<SessionCreateOptions> ConfigureStripeOptions()
+        private async Task<SessionCreateOptions> ConfigureStripeOptions() // Task<ConfigureStripeResult> with newly created OrderHeader and options
         {
             SessionCreateOptions options = new()
             {
@@ -132,11 +147,15 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                 Mode = "payment"
             };
 
+			ShoppingCartVM.OrderHeader = new(); // Jesli bym uzywał Dtosa to bym tu tworzył po prostu var orderHeaderDomain i jego dodał do bazy
+
             if (User.Identity.IsAuthenticated)
 			{
 				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
 				ShoppingCartVM.ListCart = await _unitOfWork.ShoppingCart.GetAllAsync(x => x.ApplicationUserId == userId, "Product");
+
+				// Muszę stowrzyć tutaj Domain Model a wcześniej tylko input starczy bo nie inicjalizuje tego og
 
 				ShoppingCartVM.OrderHeader.ApplicationUserId = userId;
 
@@ -145,6 +164,8 @@ namespace GameStoreWeb.Areas.Customer.Controllers
             else
             {
                 ShoppingCartVM.ListCart = GetCookieCartProducts();
+
+				var test = ShoppingCartVM.OrderHeader.OrderTotal;
 
                 ShoppingCartVM.OrderHeader.Name = AppConsts.Guest;
 
@@ -157,11 +178,22 @@ namespace GameStoreWeb.Areas.Customer.Controllers
                 ShoppingCartVM.OrderHeader.OrderTotal += (cart.Price * cart.Count);
             }
 
-            ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now;
+            ShoppingCartVM.OrderHeader.OrderDate = DateTime.Now; // orderHeaderDomain
             ShoppingCartVM.OrderHeader.PaymentStatus = AppConsts.PaymentStatusPending;
             ShoppingCartVM.OrderHeader.OrderStatus = AppConsts.StatusPending;
 
-            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader);
+			if (ShoppingCartVM.OrderHeaderInput is not null)
+			{
+				ShoppingCartVM.OrderHeader.Name = ShoppingCartVM.OrderHeaderInput.Name;
+				ShoppingCartVM.OrderHeader.PhoneNumber = ShoppingCartVM.OrderHeaderInput.PhoneNumber;
+				ShoppingCartVM.OrderHeader.StreetAddress = ShoppingCartVM.OrderHeaderInput.StreetAddress;
+				ShoppingCartVM.OrderHeader.City = ShoppingCartVM.OrderHeaderInput.City;
+				ShoppingCartVM.OrderHeader.State = ShoppingCartVM.OrderHeaderInput.State;
+				ShoppingCartVM.OrderHeader.PostalCode = ShoppingCartVM.OrderHeaderInput.PostalCode;
+
+			}
+
+            _unitOfWork.OrderHeader.Add(ShoppingCartVM.OrderHeader); // orderHeaderDomain
             await _unitOfWork.SaveAsync();
 
 			options.SuccessUrl = Url.Action(nameof(OrderConfirmation), "Cart", new { id = ShoppingCartVM.OrderHeader.Id }, protocol: Request.Scheme, host: Request.Host.Value);
@@ -335,5 +367,13 @@ namespace GameStoreWeb.Areas.Customer.Controllers
 						<b>Your games:</b> <br />
 						<ul>{productKeys}</ul>");
 		}
-	}
+
+        public class ConfigureStripeResult
+        {
+            public SessionCreateOptions Options { get; set; }
+
+			// Id of newly created OrderHeader
+            public int OrderHeaderId { get; set; }
+        }
+    }
 }
