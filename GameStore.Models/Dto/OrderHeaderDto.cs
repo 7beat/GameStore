@@ -10,7 +10,8 @@ namespace GameStore.Models.Dto
         [EmailAddress]
         public string? GuestEmailAddress { get; set; }
         [Required]
-        [StringLength(13, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 10)]
+        [StringLength(13, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 9)]
+        [RegularExpression("^[0-9]*$", ErrorMessage = "Please enter only digits")]
         public string? PhoneNumber { get; set; }
         [Required]
         public string? StreetAddress { get; set; }
@@ -23,6 +24,7 @@ namespace GameStore.Models.Dto
         [Required]
         public string? Name { get; set; }
 
+        [Required]
         public bool IsDigital { get; set; } = true;
     }
 }
