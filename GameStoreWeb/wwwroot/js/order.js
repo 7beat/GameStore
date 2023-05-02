@@ -18,7 +18,13 @@ function loadDataTable(status) {
         columns: [
             { data: "id", width: "15%" },
             { data: "name", width: "15%" },
-            { data: "phoneNumber", width: "15%" },
+            {
+                data: "phoneNumber",
+                width: "15%",
+                render: (data, type, row) => {
+                    return row.phoneNumber ? row.phoneNumber : "N/A";
+                }
+            },
             {
                 data: null,
                 width: "15%",
