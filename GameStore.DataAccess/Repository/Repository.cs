@@ -67,6 +67,11 @@ namespace GameStore.DataAccess.Repository
 
         #region Async
 
+        public async Task AddAsync(T entity)
+        {
+            await dbSet.AddAsync(entity);
+        }
+
         public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, params string[] includeProperties)
         {
             IQueryable<T> query = dbSet.Where(predicate);
