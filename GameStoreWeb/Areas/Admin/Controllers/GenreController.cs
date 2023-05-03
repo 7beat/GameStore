@@ -1,7 +1,6 @@
 ﻿using GameStore.DataAccess.Repository.IRepository;
 using GameStore.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace GameStoreWeb.Areas.Admin.Controllers
 {
@@ -32,7 +31,7 @@ namespace GameStoreWeb.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.Genre.Add(obj);
+                await _unitOfWork.Genre.AddAsync(obj);
                 await _unitOfWork.SaveAsync();
                 TempData["success"] = "Genre created successfully";
                 return RedirectToAction(nameof(Index));
@@ -44,7 +43,7 @@ namespace GameStoreWeb.Areas.Admin.Controllers
         {
             if (id is null || id == 0)
                 return NotFound();
-            
+
             var genreDb = await _unitOfWork.Genre.GetFirstOrDefaultAsync(x => x.Id == id);
 
             if (genreDb is null)
@@ -71,7 +70,7 @@ namespace GameStoreWeb.Areas.Admin.Controllers
         {
             if (id is null || id == 0)
                 return NotFound();
-            
+
             var platformDb = await _unitOfWork.Platform.GetFirstOrDefaultAsync(x => x.Id == id);
 
             if (platformDb is null)
