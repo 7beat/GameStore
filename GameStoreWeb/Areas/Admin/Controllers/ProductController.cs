@@ -29,21 +29,23 @@ namespace GameStoreWeb.Areas.Admin.Controllers
             return View();
         }
 
-        public IActionResult Upsert(int? id)
+        public async Task<IActionResult> Upsert(int? id)
         {
             ProductVM productVM = new()
             {
                 Product = new(),
-                GenreList = _unitOfWork.Genre.GetAll().Select(i => new SelectListItem
+                GenreList = (await _unitOfWork.Genre.GetAllAsync())
+                .Select(i => new SelectListItem
                 {
                     Text = i.Name,
                     Value = i.Id.ToString(),
-                }),
-                PlatformList = _unitOfWork.Platform.GetAll().Select(i => new SelectListItem
+                }).ToList(),
+                PlatformList = (await _unitOfWork.Platform.GetAllAsync())
+                .Select (i => new SelectListItem
                 {
                     Text = i.Name,
                     Value = i.Id.ToString(),
-                }),
+                }).ToList()
             };
 
             if (id is null || id == 0)
@@ -52,14 +54,14 @@ namespace GameStoreWeb.Areas.Admin.Controllers
             }
             else
             {
-                productVM.Product = _unitOfWork.Product.GetFirstOrDefault(x => x.Id == id);
+                productVM.Product = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == id);
                 return View(productVM);
             }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Upsert(ProductVM obj, IFormFile? file)
+        public async Task<IActionResult> Upsert(ProductVM obj, IFormFile? file)
         {
             if (ModelState.IsValid)
             {
@@ -88,14 +90,16 @@ namespace GameStoreWeb.Areas.Admin.Controllers
                 if (obj.Product.Id == 0)
                 {
                     _unitOfWork.Product.Add(obj.Product);
+                    TempData["success"] = "Product created successfully";
                 }
                 else
                 {
                     _unitOfWork.Product.Update(obj.Product);
+                    TempData["success"] = "Product updated successfully";
                 }
 
-                _unitOfWork.Save();
-                TempData["success"] = "Product created successfully";
+                await _unitOfWork.SaveAsync();
+                
                 return RedirectToAction(nameof(Index));
             }
             return View(obj);
