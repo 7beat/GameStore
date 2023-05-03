@@ -1,9 +1,7 @@
 ﻿using GameStore.DataAccess.Repository.IRepository;
-using GameStore.Models;
 using GameStore.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace GameStoreWeb.Areas.Admin.Controllers
 {
@@ -41,7 +39,7 @@ namespace GameStoreWeb.Areas.Admin.Controllers
                     Value = i.Id.ToString(),
                 }).ToList(),
                 PlatformList = (await _unitOfWork.Platform.GetAllAsync())
-                .Select (i => new SelectListItem
+                .Select(i => new SelectListItem
                 {
                     Text = i.Name,
                     Value = i.Id.ToString(),
@@ -89,7 +87,7 @@ namespace GameStoreWeb.Areas.Admin.Controllers
                 }
                 if (obj.Product.Id == 0)
                 {
-                    _unitOfWork.Product.Add(obj.Product);
+                    await _unitOfWork.Product.AddAsync(obj.Product);
                     TempData["success"] = "Product created successfully";
                 }
                 else
@@ -99,7 +97,7 @@ namespace GameStoreWeb.Areas.Admin.Controllers
                 }
 
                 await _unitOfWork.SaveAsync();
-                
+
                 return RedirectToAction(nameof(Index));
             }
             return View(obj);
@@ -112,7 +110,7 @@ namespace GameStoreWeb.Areas.Admin.Controllers
         {
             var productList = await _unitOfWork.Product.GetAllAsync("Platform", "Genre");
 
-            return Json(new {data = productList});
+            return Json(new { data = productList });
         }
 
         #endregion
