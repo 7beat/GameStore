@@ -1,5 +1,6 @@
 ﻿using GameStore.DataAccess.Repository.IRepository;
 using GameStore.Models.ViewModels;
+using GameStore.Utility;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -108,9 +109,29 @@ namespace GameStoreWeb.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var productList = await _unitOfWork.Product.GetAllAsync("Platform", "Genre");
+            var productList = await _unitOfWork.Product.GetAllAsync(AppIncludes.Product.Platform, AppIncludes.Product.Genre);
 
             return Json(new { data = productList });
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            var obj = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == id);
+            var title = obj.Title;
+
+            if (obj is null)
+                return Json(new { success = false, message = "Error while deleting" });
+
+            var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, obj.ImageUrl.TrimStart('\\'));
+
+            if (System.IO.File.Exists(oldImagePath))
+                System.IO.File.Delete(oldImagePath);
+
+            _unitOfWork.Product.Remove(obj);
+            await _unitOfWork.SaveAsync();
+
+            return Json(new { success = true, message = $"{title} deleted successfully!" });
         }
 
         #endregion
