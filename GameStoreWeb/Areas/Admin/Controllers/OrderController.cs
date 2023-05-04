@@ -1,10 +1,10 @@
-﻿using GameStore.Models.Identity;
+﻿using GameStore.DataAccess.Repository.IRepository;
 using GameStore.Models;
+using GameStore.Models.Identity;
+using GameStore.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using GameStore.DataAccess.Repository.IRepository;
-using GameStore.Utility;
 
 namespace GameStoreWeb.Areas.Admin.Controllers
 {

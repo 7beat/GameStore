@@ -16,7 +16,7 @@ namespace GameStore.DataAccess.Repository.IRepository
         void RemoveRange(IEnumerable<T> entities);
 
         #region Async
-
+        Task AddAsync(T entity);
         Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, params string[] includeProperties);
         Task<IEnumerable<T>> GetAllAsync(params string[] includeProperties);
         Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate, params string[] includeProperties);

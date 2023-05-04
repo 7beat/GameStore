@@ -1,9 +1,8 @@
 ﻿using GameStore.DataAccess.Repository.IRepository;
-using GameStore.Models;
 using GameStore.Models.ViewModels;
+using GameStore.Utility;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace GameStoreWeb.Areas.Admin.Controllers
 {
@@ -29,21 +28,23 @@ namespace GameStoreWeb.Areas.Admin.Controllers
             return View();
         }
 
-        public IActionResult Upsert(int? id)
+        public async Task<IActionResult> Upsert(int? id)
         {
             ProductVM productVM = new()
             {
                 Product = new(),
-                GenreList = _unitOfWork.Genre.GetAll().Select(i => new SelectListItem
+                GenreList = (await _unitOfWork.Genre.GetAllAsync())
+                .Select(i => new SelectListItem
                 {
                     Text = i.Name,
                     Value = i.Id.ToString(),
-                }),
-                PlatformList = _unitOfWork.Platform.GetAll().Select(i => new SelectListItem
+                }).ToList(),
+                PlatformList = (await _unitOfWork.Platform.GetAllAsync())
+                .Select(i => new SelectListItem
                 {
                     Text = i.Name,
                     Value = i.Id.ToString(),
-                }),
+                }).ToList()
             };
 
             if (id is null || id == 0)
@@ -52,14 +53,14 @@ namespace GameStoreWeb.Areas.Admin.Controllers
             }
             else
             {
-                productVM.Product = _unitOfWork.Product.GetFirstOrDefault(x => x.Id == id);
+                productVM.Product = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == id);
                 return View(productVM);
             }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Upsert(ProductVM obj, IFormFile? file)
+        public async Task<IActionResult> Upsert(ProductVM obj, IFormFile? file)
         {
             if (ModelState.IsValid)
             {
@@ -87,15 +88,17 @@ namespace GameStoreWeb.Areas.Admin.Controllers
                 }
                 if (obj.Product.Id == 0)
                 {
-                    _unitOfWork.Product.Add(obj.Product);
+                    await _unitOfWork.Product.AddAsync(obj.Product);
+                    TempData["success"] = "Product created successfully";
                 }
                 else
                 {
                     _unitOfWork.Product.Update(obj.Product);
+                    TempData["success"] = "Product updated successfully";
                 }
 
-                _unitOfWork.Save();
-                TempData["success"] = "Product created successfully";
+                await _unitOfWork.SaveAsync();
+
                 return RedirectToAction(nameof(Index));
             }
             return View(obj);
@@ -106,9 +109,29 @@ namespace GameStoreWeb.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var productList = await _unitOfWork.Product.GetAllAsync("Platform", "Genre");
+            var productList = await _unitOfWork.Product.GetAllAsync(AppIncludes.Product.Platform, AppIncludes.Product.Genre);
 
-            return Json(new {data = productList});
+            return Json(new { data = productList });
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete(int? id)
+        {
+            var obj = await _unitOfWork.Product.GetFirstOrDefaultAsync(x => x.Id == id);
+            var title = obj.Title;
+
+            if (obj is null)
+                return Json(new { success = false, message = "Error while deleting" });
+
+            var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, obj.ImageUrl.TrimStart('\\'));
+
+            if (System.IO.File.Exists(oldImagePath))
+                System.IO.File.Delete(oldImagePath);
+
+            _unitOfWork.Product.Remove(obj);
+            await _unitOfWork.SaveAsync();
+
+            return Json(new { success = true, message = $"{title} deleted successfully!" });
         }
 
         #endregion
