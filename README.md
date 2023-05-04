@@ -27,25 +27,37 @@ The GameStore Web Application is a simple e-commerce platform that allows users 
 
 # Images
 
-## Home
-![](img/Home.png)
+### Home Index
+![](img/HomeIndex.png)
 
-## Cart
-![](img/Cart.png)
+### Home Details
+![](img/HomeDetails.png)
 
-## Order
-![](img/Order.png)
+### Cart Index
+![](img/CartIndex.png)
 
-## Stripe Payment
-![](img/StripePayment.png)
+### Cart Summary Email
+![](img/CartSummaryEmail.png)
 
-## Order Confirmation
-![](img/OrderConfirmed.png)
+### Cart Summary Ship
+![](img/CartSummaryShip.png)
 
-# CMS
+### Stripe Payment
+![](img/StripeBlik.png)
 
-## Products List
-![](img/ContentManagement.png)
+### Order Confirmation
+![](img/OrderConfirmation.png)
+
+### Order Management
+![](img/OrderManagement.png)
+
+## CMS
+
+### Platform
+![](img/CMS_Platform.png)
+
+### Products List
+![](img/CMS_ProductIndex.png)
 
 ## Update Product
-![](img/UpdateProduct.png)
+![](img/CMS_ProductEdit.png)
