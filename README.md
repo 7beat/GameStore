@@ -7,6 +7,7 @@ The GameStore Web Application is a simple e-commerce platform that allows users 
 * Entity Framework and Unit of Work patterns for efficient data management
 * Database shopping cart for registered users, allowing them to easily manage their cart across sessions
 * Cookie-based shopping cart for anonymous users, providing a seamless user experience
+* Content Management System for creating and editing content, making it easy for non-technical users to contribute to the website
 * Integration of Stripe payments for secure online transactions
 * Order management for tracking and managing user orders
 * Custom theme support for easy customization of the application's appearance
